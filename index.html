@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v7 (Botão Responsivo)</title>
+    <title>Cofre de Ofertas v8 (Botão Box Real)</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --success-bg: #e8f5e9; --error-bg: #fff0f0; }
@@ -35,7 +35,6 @@
 
         /* --- ÁREA DOS PREVIEWS E CONTROLES --- */
         .previews-container { display: flex; gap: 30px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 1000px; }
-        /* Layout lado a lado do canvas e seus controles */
         .preview-wrapper { display: flex; gap: 15px; align-items: flex-start; }
         .canvas-column { display: flex; flex-direction: column; align-items: center; }
         .preview-title { font-weight: bold; color: #555; margin-bottom: 10px; }
@@ -67,14 +66,17 @@
         .price-container { display: flex; flex-direction: column; align-items: center; margin-top: auto; }
         .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
         
-        /* Botão Base */
+        /* MUDANÇA PRINCIPAL NO CSS DO BOTÃO BASE */
         .promo-button { 
             background: var(--shopee-red); color: white; 
-            display: flex; align-items: center; justify-content: center; 
+            display: inline-flex; /* Mudado para inline-flex para ajustar ao conteúdo */
+            align-items: center; justify-content: center; 
             border-radius: 10px; font-weight: 900; text-transform: uppercase; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            /* Importante: white-space nowrap impede que o texto quebre linha dentro do botão */
-            white-space: nowrap; padding: 0 10px;
+            white-space: nowrap;
+            /* O segredo: Padding usando EM. Se a fonte cresce, o padding cresce junto */
+            padding: 0.4em 1em; 
+            /* Removemos width e height fixos aqui */
         }
 
         /* --- ESPECÍFICO DO FEED (4:5) --- */
@@ -88,11 +90,10 @@
         #feed-design .price-container { padding-bottom: 10px; }
         #feed-design .price-old { font-size: var(--f-old); }
         
-        /* MUDANÇA AQUI: Largura e Altura baseadas em EM (proporcional à fonte) */
+        /* MUDANÇA NO FEED: Apenas aplica o tamanho da fonte */
         #feed-design .promo-button { 
             font-size: var(--f-btn);
-            width: 8.33em; /* Era 150px fixo */
-            height: 2.22em; /* Era 40px fixo */
+            /* Width e Height foram removidos daqui */
         }
 
         /* --- ESPECÍFICO DO STORY (9:16) --- */
@@ -106,11 +107,10 @@
         #story-design .price-container { padding-bottom: 5px; }
         #story-design .price-old { font-size: var(--s-old); }
 
-        /* MUDANÇA AQUI: Largura e Altura baseadas em EM (proporcional à fonte) */
+        /* MUDANÇA NO STORY: Apenas aplica o tamanho da fonte */
         #story-design .promo-button { 
             font-size: var(--s-btn);
-            width: 8.5em; /* Era 170px fixo */
-            height: 2.25em; /* Era 45px fixo */
+             /* Width e Height foram removidos daqui */
         }
 
         /* BOTÕES DOWNLOAD */
@@ -123,7 +123,7 @@
 <body>
 
     <div class="editor">
-        <h2>Editor de Ofertas v7</h2>
+        <h2>Editor de Ofertas v8</h2>
         
         <div class="editor-grid">
             <div class="editor-column">
@@ -290,7 +290,7 @@
 
 
     // --- CAMADA DE BANCO DE DADOS (IndexedDB) ---
-    const DB_NAME = 'OfertasDB_v7'; 
+    const DB_NAME = 'OfertasDB_v8'; 
     const DB_VERSION = 1;
     const STORE_NAME = 'templates';
     let db;
