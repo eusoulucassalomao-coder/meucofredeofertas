@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v3 (Leve)</title>
+    <title>Cofre de Ofertas v5 (Alta Capacidade)</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; }
+        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --success-bg: #e8f5e9; --error-bg: #fff0f0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         
         /* --- EDITOR --- */
@@ -23,63 +23,39 @@
         .upload-box { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 10px; cursor: pointer; font-size: 0.8rem; background: #fafafa; margin-bottom: 10px; transition: 0.3s; }
         .upload-box:hover { background: #eee; border-color: #aaa; }
         
-        /* Área de setup agora visível por padrão */
-        .setup-area { background: #fff0f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffcccc; text-align: center;}
-        .settings-btn { font-size: 0.7rem; color: #777; cursor: pointer; text-decoration: underline; margin-bottom: 5px; display: inline-block; }
-        .info-text { font-size: 0.65rem; color: #999; margin-top: 5px; }
+        /* Área de setup */
+        .setup-area { background: var(--error-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffcccc; text-align: center; transition: all 0.3s;}
+        .setup-area.saved-ok { background: var(--success-bg); border-color: #c8e6c9; }
+
+        .info-text { font-size: 0.65rem; color: var(--shopee-red); margin-top: 5px; font-weight: bold; transition: color 0.3s;}
+        .setup-area.saved-ok .info-text { color: var(--success-green); }
 
         /* --- ÁREA DOS PREVIEWS --- */
-        .previews-container {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-            justify-content: center;
-            flex-wrap: wrap;
-            width: 100%;
-            max-width: 900px;
-        }
-
+        .previews-container { display: flex; gap: 30px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px; }
         .preview-wrapper { display: flex; flex-direction: column; align-items: center; }
         .preview-title { font-weight: bold; color: #555; margin-bottom: 10px; }
 
         /* ESTILOS GERAIS DOS CANVASE */
         .design-canvas { 
-            background-color: #ddd; /* Cor de fundo se não houver template */
+            background-color: #ddd; 
             background-size: 100% 100%; 
             background-repeat: no-repeat;
             position: relative; 
             border-radius: 12px; 
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            /* Adicionado transição suave ao carregar imagem */
             transition: background-image 0.3s ease-in-out;
         }
 
-        .content-area { 
-            position: absolute; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            display: flex; flex-direction: column; 
-            align-items: center; box-sizing: border-box;
-        }
-
+        .content-area { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
         .image-wrapper { width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; overflow: hidden; }
         .img-display { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
 
-        .text-desc { 
-            text-align: center; font-weight: 700; color: #333; 
-            text-transform: uppercase; line-height: 1.3;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .text-desc { text-align: center; font-weight: 700; color: #333; text-transform: uppercase; line-height: 1.3; display: flex; align-items: center; justify-content: center; }
         
         .price-container { display: flex; flex-direction: column; align-items: center; margin-top: auto; }
         .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
-        .promo-button { 
-            background: var(--shopee-red); color: white; 
-            display: flex; align-items: center; justify-content: center; 
-            border-radius: 10px; font-weight: 900; text-transform: uppercase; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .promo-button { background: var(--shopee-red); color: white; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         /* --- ESPECÍFICO DO FEED (4:5) --- */
         #feed-design { width: 360px; height: 450px; }
@@ -95,34 +71,27 @@
         #story-design .content-area { top: 155px; width: 280px; height: 360px; }
         #story-design .image-wrapper { height: 185px; margin-bottom: 10px; }
         #story-design .text-desc { font-size: 14px; height: 60px; margin-bottom: 5px; }
+        /* Margem negativa para subir o preço */
+        #story-design .price-container { padding-bottom: 5px; margin-top: -30px; }
+        #story-design .price-old { font-size: 15px; }
+        #story-design .promo-button { width: 170px; height: 45px; font-size: 20px; }
 
-        /* AQUI ESTÁ A MUDANÇA: Adicionamos a linha do margin-top */
-        #story-design .price-container { 
-        padding-bottom: 5px; 
-        margin-top: -30px; /* <-- ESSA LINHA NOVA É QUE FAZ SUBIR! */
-}
-
-#story-design .price-old { font-size: 15px; }
-#story-design .promo-button { width: 170px; height: 45px; font-size: 20px; }
-
-        /* BOTÕES DE DOWNLOAD */
+        /* BOTÕES */
         .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; transition: 0.2s; }
         .download-btn:hover { background: #219653; }
         .btn-story { background: #8e44ad; }
         .btn-story:hover { background: #732d91; }
         
-        /* Esconde o input file feio */
         .input-file-hidden { display: none; }
-        /* Botão bonito para selecionar template */
-        .btn-select-template {
-            background: #ffcccc; color: var(--shopee-red); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: inline-block;
-        }
+        .btn-select-template { background: #ffcccc; color: var(--shopee-red); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: inline-block; transition: 0.3s;}
+        .setup-area.saved-ok .btn-select-template { background: #c8e6c9; color: var(--success-green); }
+        .reset-btn { font-size: 0.7rem; color: #999; text-decoration: underline; cursor: pointer; margin-top: 10px; display: inline-block;}
     </style>
 </head>
 <body>
 
     <div class="editor">
-        <h2>Editor de Ofertas</h2>
+        <h2>Editor de Ofertas (Alta Capacidade)</h2>
         
         <div class="editor-grid">
             <div class="editor-column">
@@ -150,34 +119,35 @@
 
             <div class="editor-column">
                 <h3>2. Templates (Fundo)</h3>
-                <p style="font-size: 0.7rem; color: #666;">Selecione os fundos para esta sessão.</p>
+                <p style="font-size: 0.7rem; color: #666;">Agora suporta imagens de alta qualidade.</p>
                 
                 <label>Fundo do Feed (4:5)</label>
                 <div id="setup-feed" class="setup-area">
                     <label for="file-feed" class="btn-select-template">Selecionar Imagem Feed</label>
-                    <input id="file-feed" class="input-file-hidden" type="file" accept="image/*" onchange="loadTemplate(event, 'feed')">
-                    <p id="status-feed" class="info-text">Nenhum fundo selecionado.</p>
+                    <input id="file-feed" class="input-file-hidden" type="file" accept="image/*" onchange="handleTemplateSelect(event, 'feed')">
+                    <p id="status-feed" class="info-text">Nenhum fundo salvo.</p>
                 </div>
 
                 <label style="margin-top: 20px;">Fundo do Story (9:16)</label>
                 <div id="setup-story" class="setup-area">
                     <label for="file-story" class="btn-select-template">Selecionar Imagem Story</label>
-                    <input id="file-story" class="input-file-hidden" type="file" accept="image/*" onchange="loadTemplate(event, 'story')">
-                    <p id="status-story" class="info-text">Nenhum fundo selecionado.</p>
+                    <input id="file-story" class="input-file-hidden" type="file" accept="image/*" onchange="handleTemplateSelect(event, 'story')">
+                    <p id="status-story" class="info-text">Nenhum fundo salvo.</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <span class="reset-btn" onclick="clearTemplates()">Limpar Templates Salvos</span>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="previews-container">
-        
         <div class="preview-wrapper">
             <div class="preview-title">Feed (Postagem)</div>
             <div id="feed-design" class="design-canvas">
                 <div class="content-area">
-                    <div class="image-wrapper">
-                        <img id="viewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-                    </div>
+                    <div class="image-wrapper"><img id="viewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
                     <div id="viewDesc" class="text-desc">AGUARDANDO DADOS...</div>
                     <div class="price-container">
                         <div id="viewOld" class="price-old">R$ 0,00</div>
@@ -192,9 +162,7 @@
             <div class="preview-title">Story (Vertical)</div>
             <div id="story-design" class="design-canvas">
                 <div class="content-area">
-                    <div class="image-wrapper">
-                        <img id="storyViewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-                    </div>
+                    <div class="image-wrapper"><img id="storyViewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
                     <div id="storyViewDesc" class="text-desc">AGUARDANDO DADOS...</div>
                     <div class="price-container">
                         <div id="storyViewOld" class="price-old">R$ 0,00</div>
@@ -204,50 +172,141 @@
             </div>
             <button class="download-btn btn-story" onclick="download('story-design', 'post-story')">BAIXAR STORY</button>
         </div>
-
     </div>
 
 <script>
-    // REMOVIDO: Não tentamos mais carregar do localStorage ao iniciar
-    // window.onload = function() { ... }
+    // --- CAMADA DE BANCO DE DADOS (IndexedDB) ---
+    const DB_NAME = 'OfertasDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'templates';
+    let db;
 
-    // Função modificada: Carrega o template apenas para a sessão atual
-    function loadTemplate(event, type) {
+    // Inicializa o Banco de Dados
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
+                }
+            };
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                resolve(db);
+            };
+            request.onerror = (event) => {
+                console.error("Erro no banco de dados:", event.target.error);
+                reject("Erro ao abrir banco de dados.");
+            };
+        });
+    }
+
+    // Salva arquivo no Banco
+    async function saveToDB(key, file) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.put(file, key);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    // Recupera arquivo do Banco
+    async function getFromDB(key) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(key);
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+    // -------------------------------------------
+
+    // Inicialização da página
+    window.onload = async function() {
+        try {
+            await initDB();
+            // Tenta carregar templates salvos
+            loadSavedTemplate('feed');
+            loadSavedTemplate('story');
+        } catch (error) {
+            console.error("Falha ao iniciar sistema de armazenamento:", error);
+            alert("Erro: Seu navegador pode não suportar armazenamento de arquivos grandes.");
+        }
+    }
+
+    // Carrega um template salvo do banco e aplica na tela
+    async function loadSavedTemplate(type) {
+        try {
+            const fileBlob = await getFromDB(type);
+            if (fileBlob) {
+                // Cria uma URL temporária para o arquivo (muito eficiente)
+                const objectURL = URL.createObjectURL(fileBlob);
+                applyBackground(type, objectURL);
+                updateUIStatus(type, true);
+            }
+        } catch (error) {
+            console.error(`Erro ao carregar template ${type}:`, error);
+        }
+    }
+
+    // Lida com a seleção de um novo arquivo pelo usuário
+    async function handleTemplateSelect(event, type) {
         const file = event.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        // Quando o arquivo termina de ser lido:
-        reader.onload = function() {
-            const base64 = reader.result;
-            let elementId, statusId;
+        // 1. Aplica imediatamente para preview (usando URL temporária)
+        const objectURL = URL.createObjectURL(file);
+        applyBackground(type, objectURL);
 
-            if (type === 'feed') {
-                elementId = 'feed-design';
-                statusId = 'status-feed';
-            } else {
-                elementId = 'story-design';
-                statusId = 'status-story';
-            }
-
-            // 1. Aplica a imagem de fundo imediatamente
-            document.getElementById(elementId).style.backgroundImage = `url(${base64})`;
-            
-            // 2. Atualiza o texto de status e muda a cor da caixa para indicar sucesso
-            const statusTxt = document.getElementById(statusId);
-            statusTxt.innerText = "Fundo carregado com sucesso!";
-            statusTxt.style.color = "green";
-            document.getElementById('setup-' + type).style.background = "#e8f5e9";
-            document.getElementById('setup-' + type).style.borderColor = "#c8e6c9";
-
-            // IMPORTANTE: Removemos a tentativa de salvar no localStorage (localStorage.setItem)
-            // Isso elimina o erro de "imagem muito grande".
-        };
-        // Lê o arquivo como uma URL de dados
-        reader.readAsDataURL(file);
+        // 2. Tenta salvar o arquivo pesado no banco de dados
+        try {
+            await saveToDB(type, file);
+            updateUIStatus(type, true); // Sucesso: Verde
+        } catch (error) {
+            console.error("Erro ao salvar no DB:", error);
+            alert("Erro ao salvar o template permanentemente. Ele funcionará apenas nesta sessão.");
+            updateUIStatus(type, false); // Falha: Vermelho
+        }
     }
 
-    // Atualiza a imagem do produto nos DOIS previews
+    // Função auxiliar para aplicar o background
+    function applyBackground(type, url) {
+        const elementId = type === 'feed' ? 'feed-design' : 'story-design';
+        document.getElementById(elementId).style.backgroundImage = `url(${url})`;
+    }
+
+    // Função auxiliar para mudar a cor da interface
+    function updateUIStatus(type, isSaved) {
+        const setupBox = document.getElementById('setup-' + type);
+        const statusTxt = document.getElementById('status-' + type);
+        
+        if (isSaved) {
+            setupBox.classList.add('saved-ok');
+            statusTxt.innerText = "Fundo de alta qualidade salvo!";
+        } else {
+            setupBox.classList.remove('saved-ok');
+            statusTxt.innerText = "Usando apenas nesta sessão (Não salvo).";
+        }
+    }
+
+    // Limpa o banco de dados
+    async function clearTemplates() {
+        if(confirm("Tem certeza que deseja limpar os templates salvos?")) {
+            try {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                transaction.objectStore(STORE_NAME).clear();
+                location.reload();
+            } catch (e) {
+                alert("Erro ao limpar banco de dados.");
+            }
+        }
+    }
+
+    // --- FUNÇÕES DE EDIÇÃO (Iguais às versões anteriores) ---
     function updateProductImg(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -266,33 +325,26 @@
         return "R$ " + clean;
     }
 
-    // Atualiza os textos nos DOIS previews
     function update() {
         const desc = document.getElementById('inDesc').value.toUpperCase() || "DESCRIÇÃO DO PRODUTO";
         const old = formatCurrency(document.getElementById('inOld').value) || "R$ 0,00";
         const promo = formatCurrency(document.getElementById('inPromo').value) || "VALOR";
 
-        // Atualiza Feed
         document.getElementById('viewDesc').innerText = desc;
         document.getElementById('viewOld').innerText = old;
         document.getElementById('viewPromo').innerText = promo;
 
-        // Atualiza Story
         document.getElementById('storyViewDesc').innerText = desc;
         document.getElementById('storyViewOld').innerText = old;
         document.getElementById('storyViewPromo').innerText = promo;
     }
 
-    // Função de download
     async function download(elementId, filename) {
         const area = document.getElementById(elementId);
-        // Verifica se tem fundo carregado antes de baixar
-        if (area.style.backgroundImage === '') {
+        if (area.style.backgroundImage === '' || area.style.backgroundImage === 'none') {
             alert("Atenção: Você não selecionou uma imagem de fundo (template) para este formato.");
             return;
         }
-
-        // Usa scale 3 para garantir alta qualidade
         const canvas = await html2canvas(area, { scale: 3, useCORS: true, backgroundColor: null });
         const link = document.createElement('a');
         link.download = `${filename}-${Date.now()}.png`;
