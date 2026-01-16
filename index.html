@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v6 (Ajuste de Tamanho)</title>
+    <title>Cofre de Ofertas v7 (Botão Responsivo)</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --success-bg: #e8f5e9; --error-bg: #fff0f0; }
@@ -66,35 +66,52 @@
         .text-desc { text-align: center; font-weight: 700; color: #333; text-transform: uppercase; line-height: 1.3; display: flex; align-items: center; justify-content: center; }
         .price-container { display: flex; flex-direction: column; align-items: center; margin-top: auto; }
         .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
-        .promo-button { background: var(--shopee-red); color: white; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        /* Botão Base */
+        .promo-button { 
+            background: var(--shopee-red); color: white; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 10px; font-weight: 900; text-transform: uppercase; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            /* Importante: white-space nowrap impede que o texto quebre linha dentro do botão */
+            white-space: nowrap; padding: 0 10px;
+        }
 
         /* --- ESPECÍFICO DO FEED (4:5) --- */
         #feed-design { 
             width: 360px; height: 450px;
-            /* Variáveis CSS para tamanhos */
             --f-desc: 12px; --f-old: 13px; --f-btn: 18px;
         }
         #feed-design .content-area { top: 125px; width: 290px; height: 290px; }
         #feed-design .image-wrapper { height: 170px; }
-        /* Usando as variáveis */
         #feed-design .text-desc { font-size: var(--f-desc); height: 45px; }
         #feed-design .price-container { padding-bottom: 10px; }
         #feed-design .price-old { font-size: var(--f-old); }
-        #feed-design .promo-button { width: 150px; height: 40px; font-size: var(--f-btn); }
+        
+        /* MUDANÇA AQUI: Largura e Altura baseadas em EM (proporcional à fonte) */
+        #feed-design .promo-button { 
+            font-size: var(--f-btn);
+            width: 8.33em; /* Era 150px fixo */
+            height: 2.22em; /* Era 40px fixo */
+        }
 
         /* --- ESPECÍFICO DO STORY (9:16) --- */
         #story-design { 
             width: 324px; height: 576px;
-            /* Variáveis CSS para tamanhos */
             --s-desc: 14px; --s-old: 15px; --s-btn: 20px;
         }
         #story-design .content-area { top: 155px; width: 280px; height: 360px; }
         #story-design .image-wrapper { height: 185px; margin-bottom: 10px; }
-        /* Usando as variáveis e o ajuste de posição */
         #story-design .text-desc { font-size: var(--s-desc); height: 60px; margin-bottom: 5px; position: relative; top: -20px; }
         #story-design .price-container { padding-bottom: 5px; }
         #story-design .price-old { font-size: var(--s-old); }
-        #story-design .promo-button { width: 170px; height: 45px; font-size: var(--s-btn); }
+
+        /* MUDANÇA AQUI: Largura e Altura baseadas em EM (proporcional à fonte) */
+        #story-design .promo-button { 
+            font-size: var(--s-btn);
+            width: 8.5em; /* Era 170px fixo */
+            height: 2.25em; /* Era 45px fixo */
+        }
 
         /* BOTÕES DOWNLOAD */
         .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; transition: 0.2s; }
@@ -106,7 +123,7 @@
 <body>
 
     <div class="editor">
-        <h2>Editor de Ofertas v6</h2>
+        <h2>Editor de Ofertas v7</h2>
         
         <div class="editor-grid">
             <div class="editor-column">
@@ -194,7 +211,7 @@
                     </div>
                 </div>
                  <div class="control-group">
-                    <span class="control-label">Texto Botão</span>
+                    <span class="control-label" style="color: var(--shopee-red);">Tamanho Botão (Box)</span>
                     <div class="control-actions">
                         <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-btn', -1)">-</button>
                         <span id="disp-f-btn" class="size-display">18</span>
@@ -239,7 +256,7 @@
                     </div>
                 </div>
                  <div class="control-group">
-                    <span class="control-label">Texto Botão</span>
+                    <span class="control-label" style="color: var(--shopee-red);">Tamanho Botão (Box)</span>
                     <div class="control-actions">
                         <button class="btn-size" onclick="adjustFontSize('story-design', '--s-btn', -1)">-</button>
                         <span id="disp-s-btn" class="size-display">20</span>
@@ -252,35 +269,28 @@
     </div>
 
 <script>
-    // --- FUNÇÃO NOVA: AJUSTE DE TAMANHO EM TEMPO REAL ---
+    // --- FUNÇÃO DE AJUSTE DE TAMANHO ---
     function adjustFontSize(elementId, variableName, change) {
         const element = document.getElementById(elementId);
-        // Pega o estilo computado atual do elemento
         const style = getComputedStyle(element);
-        // Lê o valor atual da variável (ex: "12px")
         let currentValueStr = style.getPropertyValue(variableName).trim();
-        // Converte para número (ex: 12)
         let currentSize = parseInt(currentValueStr);
         
-        // Calcula novo tamanho
         let newSize = currentSize + change;
 
-        // Limites de segurança (mínimo 8px, máximo 60px)
+        // Limites de segurança (Aumentei o máximo para 75 para permitir botões grandes)
         if (newSize < 8) newSize = 8;
-        if (newSize > 60) newSize = 60;
+        if (newSize > 75) newSize = 75;
 
-        // Aplica o novo valor na variável CSS do elemento
         element.style.setProperty(variableName, newSize + 'px');
 
-        // Atualiza o mostrador numérico no painel de controle
-        // Remove os hífens do nome da variável para achar o ID do display (ex: --f-desc vira disp-f-desc)
         const displayId = 'disp' + variableName.replace('--', '-');
         document.getElementById(displayId).innerText = newSize;
     }
 
 
-    // --- CAMADA DE BANCO DE DADOS (IndexedDB) - Mantida da v5 ---
-    const DB_NAME = 'OfertasDB_v6'; // Mudei o nome para evitar conflito
+    // --- CAMADA DE BANCO DE DADOS (IndexedDB) ---
+    const DB_NAME = 'OfertasDB_v7'; 
     const DB_VERSION = 1;
     const STORE_NAME = 'templates';
     let db;
