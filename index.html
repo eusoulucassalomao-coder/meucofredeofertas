@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v5 (Alta Capacidade)</title>
+    <title>Cofre de Ofertas v6 (Ajuste de Tamanho)</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --success-bg: #e8f5e9; --error-bg: #fff0f0; }
@@ -26,72 +26,87 @@
         /* Área de setup */
         .setup-area { background: var(--error-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffcccc; text-align: center; transition: all 0.3s;}
         .setup-area.saved-ok { background: var(--success-bg); border-color: #c8e6c9; }
-
         .info-text { font-size: 0.65rem; color: var(--shopee-red); margin-top: 5px; font-weight: bold; transition: color 0.3s;}
         .setup-area.saved-ok .info-text { color: var(--success-green); }
+        .input-file-hidden { display: none; }
+        .btn-select-template { background: #ffcccc; color: var(--shopee-red); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: inline-block; transition: 0.3s;}
+        .setup-area.saved-ok .btn-select-template { background: #c8e6c9; color: var(--success-green); }
+        .reset-btn { font-size: 0.7rem; color: #999; text-decoration: underline; cursor: pointer; margin-top: 10px; display: inline-block;}
 
-        /* --- ÁREA DOS PREVIEWS --- */
-        .previews-container { display: flex; gap: 30px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px; }
-        .preview-wrapper { display: flex; flex-direction: column; align-items: center; }
+        /* --- ÁREA DOS PREVIEWS E CONTROLES --- */
+        .previews-container { display: flex; gap: 30px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 1000px; }
+        /* Layout lado a lado do canvas e seus controles */
+        .preview-wrapper { display: flex; gap: 15px; align-items: flex-start; }
+        .canvas-column { display: flex; flex-direction: column; align-items: center; }
         .preview-title { font-weight: bold; color: #555; margin-bottom: 10px; }
+
+        /* --- PAINEL DE CONTROLE DE TAMANHO --- */
+        .size-controls {
+            background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; gap: 10px; min-width: 140px;
+        }
+        .control-group { display: flex; flex-direction: column; }
+        .control-label { font-size: 0.7rem; font-weight: bold; color: #777; margin-bottom: 3px;}
+        .control-actions { display: flex; align-items: center; justify-content: space-between; background: #f5f5f5; border-radius: 5px; padding: 2px;}
+        .btn-size {
+            width: 25px; height: 25px; border: none; background: #ddd; color: #333; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-size:hover { background: #ccc; }
+        .size-display { font-size: 0.8rem; font-weight: bold; color: #555; }
 
         /* ESTILOS GERAIS DOS CANVASE */
         .design-canvas { 
-            background-color: #ddd; 
-            background-size: 100% 100%; 
-            background-repeat: no-repeat;
-            position: relative; 
-            border-radius: 12px; 
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: background-image 0.3s ease-in-out;
+            background-color: #ddd; background-size: 100% 100%; background-repeat: no-repeat;
+            position: relative; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08); transition: background-image 0.3s ease-in-out;
         }
-
         .content-area { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
         .image-wrapper { width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; overflow: hidden; }
         .img-display { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
-
         .text-desc { text-align: center; font-weight: 700; color: #333; text-transform: uppercase; line-height: 1.3; display: flex; align-items: center; justify-content: center; }
-        
         .price-container { display: flex; flex-direction: column; align-items: center; margin-top: auto; }
         .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
         .promo-button { background: var(--shopee-red); color: white; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         /* --- ESPECÍFICO DO FEED (4:5) --- */
-        #feed-design { width: 360px; height: 450px; }
+        #feed-design { 
+            width: 360px; height: 450px;
+            /* Variáveis CSS para tamanhos */
+            --f-desc: 12px; --f-old: 13px; --f-btn: 18px;
+        }
         #feed-design .content-area { top: 125px; width: 290px; height: 290px; }
         #feed-design .image-wrapper { height: 170px; }
-        #feed-design .text-desc { font-size: 12px; height: 45px; }
+        /* Usando as variáveis */
+        #feed-design .text-desc { font-size: var(--f-desc); height: 45px; }
         #feed-design .price-container { padding-bottom: 10px; }
-        #feed-design .price-old { font-size: 13px; }
-        #feed-design .promo-button { width: 150px; height: 40px; font-size: 18px; }
+        #feed-design .price-old { font-size: var(--f-old); }
+        #feed-design .promo-button { width: 150px; height: 40px; font-size: var(--f-btn); }
 
         /* --- ESPECÍFICO DO STORY (9:16) --- */
-        #story-design { width: 324px; height: 576px; }
+        #story-design { 
+            width: 324px; height: 576px;
+            /* Variáveis CSS para tamanhos */
+            --s-desc: 14px; --s-old: 15px; --s-btn: 20px;
+        }
         #story-design .content-area { top: 155px; width: 280px; height: 360px; }
         #story-design .image-wrapper { height: 185px; margin-bottom: 10px; }
-        #story-design .text-desc { font-size: 14px; height: 60px; margin-bottom: 5px; position: relative; top: -30px; }
-        /* Margem negativa para subir o preço */
-        #story-design .price-container { padding-bottom: 5px; margin-top: -30px; }
-        #story-design .price-old { font-size: 15px; }
-        #story-design .promo-button { width: 170px; height: 45px; font-size: 20px; }
+        /* Usando as variáveis e o ajuste de posição */
+        #story-design .text-desc { font-size: var(--s-desc); height: 60px; margin-bottom: 5px; position: relative; top: -20px; }
+        #story-design .price-container { padding-bottom: 5px; }
+        #story-design .price-old { font-size: var(--s-old); }
+        #story-design .promo-button { width: 170px; height: 45px; font-size: var(--s-btn); }
 
-        /* BOTÕES */
+        /* BOTÕES DOWNLOAD */
         .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; transition: 0.2s; }
         .download-btn:hover { background: #219653; }
         .btn-story { background: #8e44ad; }
         .btn-story:hover { background: #732d91; }
-        
-        .input-file-hidden { display: none; }
-        .btn-select-template { background: #ffcccc; color: var(--shopee-red); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: inline-block; transition: 0.3s;}
-        .setup-area.saved-ok .btn-select-template { background: #c8e6c9; color: var(--success-green); }
-        .reset-btn { font-size: 0.7rem; color: #999; text-decoration: underline; cursor: pointer; margin-top: 10px; display: inline-block;}
     </style>
 </head>
 <body>
 
     <div class="editor">
-        <h2>Editor de Ofertas (Alta Capacidade)</h2>
+        <h2>Editor de Ofertas v6</h2>
         
         <div class="editor-grid">
             <div class="editor-column">
@@ -119,7 +134,7 @@
 
             <div class="editor-column">
                 <h3>2. Templates (Fundo)</h3>
-                <p style="font-size: 0.7rem; color: #666;">Agora suporta imagens de alta qualidade.</p>
+                <p style="font-size: 0.7rem; color: #666;">Suporta alta qualidade (Banco de Dados).</p>
                 
                 <label>Fundo do Feed (4:5)</label>
                 <div id="setup-feed" class="setup-area">
@@ -143,45 +158,133 @@
     </div>
 
     <div class="previews-container">
+        
         <div class="preview-wrapper">
-            <div class="preview-title">Feed (Postagem)</div>
-            <div id="feed-design" class="design-canvas">
-                <div class="content-area">
-                    <div class="image-wrapper"><img id="viewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
-                    <div id="viewDesc" class="text-desc">AGUARDANDO DADOS...</div>
-                    <div class="price-container">
-                        <div id="viewOld" class="price-old">R$ 0,00</div>
-                        <div id="viewPromo" class="promo-button">VALOR</div>
+            <div class="canvas-column">
+                <div class="preview-title">Feed (Postagem)</div>
+                <div id="feed-design" class="design-canvas">
+                    <div class="content-area">
+                        <div class="image-wrapper"><img id="viewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
+                        <div id="viewDesc" class="text-desc">AGUARDANDO DADOS...</div>
+                        <div class="price-container">
+                            <div id="viewOld" class="price-old">R$ 0,00</div>
+                            <div id="viewPromo" class="promo-button">VALOR</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="download-btn" onclick="download('feed-design', 'post-feed')">BAIXAR FEED</button>
+            </div>
+            
+            <div class="size-controls">
+                <div style="font-weight: bold; text-align: center; margin-bottom: 5px;">Tamanhos Feed</div>
+                <div class="control-group">
+                    <span class="control-label">Descrição</span>
+                    <div class="control-actions">
+                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-desc', -1)">-</button>
+                        <span id="disp-f-desc" class="size-display">12</span>
+                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-desc', 1)">+</button>
+                    </div>
+                </div>
+                 <div class="control-group">
+                    <span class="control-label">Preço Antigo</span>
+                    <div class="control-actions">
+                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-old', -1)">-</button>
+                        <span id="disp-f-old" class="size-display">13</span>
+                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-old', 1)">+</button>
+                    </div>
+                </div>
+                 <div class="control-group">
+                    <span class="control-label">Texto Botão</span>
+                    <div class="control-actions">
+                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-btn', -1)">-</button>
+                        <span id="disp-f-btn" class="size-display">18</span>
+                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-btn', 1)">+</button>
                     </div>
                 </div>
             </div>
-            <button class="download-btn" onclick="download('feed-design', 'post-feed')">BAIXAR FEED</button>
         </div>
 
         <div class="preview-wrapper">
-            <div class="preview-title">Story (Vertical)</div>
-            <div id="story-design" class="design-canvas">
-                <div class="content-area">
-                    <div class="image-wrapper"><img id="storyViewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
-                    <div id="storyViewDesc" class="text-desc">AGUARDANDO DADOS...</div>
-                    <div class="price-container">
-                        <div id="storyViewOld" class="price-old">R$ 0,00</div>
-                        <div id="storyViewPromo" class="promo-button">VALOR</div>
+            <div class="canvas-column">
+                <div class="preview-title">Story (Vertical)</div>
+                <div id="story-design" class="design-canvas">
+                    <div class="content-area">
+                        <div class="image-wrapper"><img id="storyViewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
+                        <div id="storyViewDesc" class="text-desc">AGUARDANDO DADOS...</div>
+                        <div class="price-container">
+                            <div id="storyViewOld" class="price-old">R$ 0,00</div>
+                            <div id="storyViewPromo" class="promo-button">VALOR</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="download-btn btn-story" onclick="download('story-design', 'post-story')">BAIXAR STORY</button>
+            </div>
+
+             <div class="size-controls" style="border-top: 3px solid #8e44ad;">
+                <div style="font-weight: bold; text-align: center; margin-bottom: 5px;">Tamanhos Story</div>
+                <div class="control-group">
+                    <span class="control-label">Descrição</span>
+                    <div class="control-actions">
+                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-desc', -1)">-</button>
+                        <span id="disp-s-desc" class="size-display">14</span>
+                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-desc', 1)">+</button>
+                    </div>
+                </div>
+                 <div class="control-group">
+                    <span class="control-label">Preço Antigo</span>
+                    <div class="control-actions">
+                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-old', -1)">-</button>
+                        <span id="disp-s-old" class="size-display">15</span>
+                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-old', 1)">+</button>
+                    </div>
+                </div>
+                 <div class="control-group">
+                    <span class="control-label">Texto Botão</span>
+                    <div class="control-actions">
+                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-btn', -1)">-</button>
+                        <span id="disp-s-btn" class="size-display">20</span>
+                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-btn', 1)">+</button>
                     </div>
                 </div>
             </div>
-            <button class="download-btn btn-story" onclick="download('story-design', 'post-story')">BAIXAR STORY</button>
         </div>
+
     </div>
 
 <script>
-    // --- CAMADA DE BANCO DE DADOS (IndexedDB) ---
-    const DB_NAME = 'OfertasDB';
+    // --- FUNÇÃO NOVA: AJUSTE DE TAMANHO EM TEMPO REAL ---
+    function adjustFontSize(elementId, variableName, change) {
+        const element = document.getElementById(elementId);
+        // Pega o estilo computado atual do elemento
+        const style = getComputedStyle(element);
+        // Lê o valor atual da variável (ex: "12px")
+        let currentValueStr = style.getPropertyValue(variableName).trim();
+        // Converte para número (ex: 12)
+        let currentSize = parseInt(currentValueStr);
+        
+        // Calcula novo tamanho
+        let newSize = currentSize + change;
+
+        // Limites de segurança (mínimo 8px, máximo 60px)
+        if (newSize < 8) newSize = 8;
+        if (newSize > 60) newSize = 60;
+
+        // Aplica o novo valor na variável CSS do elemento
+        element.style.setProperty(variableName, newSize + 'px');
+
+        // Atualiza o mostrador numérico no painel de controle
+        // Remove os hífens do nome da variável para achar o ID do display (ex: --f-desc vira disp-f-desc)
+        const displayId = 'disp' + variableName.replace('--', '-');
+        document.getElementById(displayId).innerText = newSize;
+    }
+
+
+    // --- CAMADA DE BANCO DE DADOS (IndexedDB) - Mantida da v5 ---
+    const DB_NAME = 'OfertasDB_v6'; // Mudei o nome para evitar conflito
     const DB_VERSION = 1;
     const STORE_NAME = 'templates';
     let db;
 
-    // Inicializa o Banco de Dados
     function initDB() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -196,13 +299,12 @@
                 resolve(db);
             };
             request.onerror = (event) => {
-                console.error("Erro no banco de dados:", event.target.error);
+                console.error("Erro DB:", event.target.error);
                 reject("Erro ao abrir banco de dados.");
             };
         });
     }
 
-    // Salva arquivo no Banco
     async function saveToDB(key, file) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -213,7 +315,6 @@
         });
     }
 
-    // Recupera arquivo do Banco
     async function getFromDB(key) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([STORE_NAME], 'readonly');
@@ -223,90 +324,71 @@
             request.onerror = () => reject(request.error);
         });
     }
-    // -------------------------------------------
 
-    // Inicialização da página
+    // Inicialização
     window.onload = async function() {
         try {
             await initDB();
-            // Tenta carregar templates salvos
             loadSavedTemplate('feed');
             loadSavedTemplate('story');
         } catch (error) {
-            console.error("Falha ao iniciar sistema de armazenamento:", error);
-            alert("Erro: Seu navegador pode não suportar armazenamento de arquivos grandes.");
+            console.error("Falha DB:", error);
         }
     }
 
-    // Carrega um template salvo do banco e aplica na tela
     async function loadSavedTemplate(type) {
         try {
             const fileBlob = await getFromDB(type);
             if (fileBlob) {
-                // Cria uma URL temporária para o arquivo (muito eficiente)
                 const objectURL = URL.createObjectURL(fileBlob);
                 applyBackground(type, objectURL);
                 updateUIStatus(type, true);
             }
-        } catch (error) {
-            console.error(`Erro ao carregar template ${type}:`, error);
-        }
+        } catch (error) { console.error(error); }
     }
 
-    // Lida com a seleção de um novo arquivo pelo usuário
     async function handleTemplateSelect(event, type) {
         const file = event.target.files[0];
         if (!file) return;
-
-        // 1. Aplica imediatamente para preview (usando URL temporária)
         const objectURL = URL.createObjectURL(file);
         applyBackground(type, objectURL);
-
-        // 2. Tenta salvar o arquivo pesado no banco de dados
         try {
             await saveToDB(type, file);
-            updateUIStatus(type, true); // Sucesso: Verde
+            updateUIStatus(type, true);
         } catch (error) {
-            console.error("Erro ao salvar no DB:", error);
-            alert("Erro ao salvar o template permanentemente. Ele funcionará apenas nesta sessão.");
-            updateUIStatus(type, false); // Falha: Vermelho
+            alert("Erro ao salvar template. Usando apenas nesta sessão.");
+            updateUIStatus(type, false);
         }
     }
 
-    // Função auxiliar para aplicar o background
     function applyBackground(type, url) {
         const elementId = type === 'feed' ? 'feed-design' : 'story-design';
         document.getElementById(elementId).style.backgroundImage = `url(${url})`;
     }
 
-    // Função auxiliar para mudar a cor da interface
     function updateUIStatus(type, isSaved) {
         const setupBox = document.getElementById('setup-' + type);
         const statusTxt = document.getElementById('status-' + type);
-        
         if (isSaved) {
             setupBox.classList.add('saved-ok');
-            statusTxt.innerText = "Fundo de alta qualidade salvo!";
+            statusTxt.innerText = "Fundo salvo!";
         } else {
             setupBox.classList.remove('saved-ok');
-            statusTxt.innerText = "Usando apenas nesta sessão (Não salvo).";
+            statusTxt.innerText = "Apenas nesta sessão.";
         }
     }
 
-    // Limpa o banco de dados
     async function clearTemplates() {
-        if(confirm("Tem certeza que deseja limpar os templates salvos?")) {
+        if(confirm("Limpar templates salvos?")) {
             try {
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 transaction.objectStore(STORE_NAME).clear();
                 location.reload();
-            } catch (e) {
-                alert("Erro ao limpar banco de dados.");
-            }
+            } catch (e) { alert("Erro ao limpar."); }
         }
     }
 
-    // --- FUNÇÕES DE EDIÇÃO (Iguais às versões anteriores) ---
+    // Funções de Edição
     function updateProductImg(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -342,7 +424,7 @@
     async function download(elementId, filename) {
         const area = document.getElementById(elementId);
         if (area.style.backgroundImage === '' || area.style.backgroundImage === 'none') {
-            alert("Atenção: Você não selecionou uma imagem de fundo (template) para este formato.");
+            alert("Selecione um template de fundo antes de baixar.");
             return;
         }
         const canvas = await html2canvas(area, { scale: 3, useCORS: true, backgroundColor: null });
@@ -354,4 +436,3 @@
 </script>
 </body>
 </html>
-
