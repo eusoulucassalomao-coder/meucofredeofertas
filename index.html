@@ -2,150 +2,300 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Cofre de Ofertas - Smart Memory</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cofre de Ofertas v3 (Leve)</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        :root { --shopee-red: #ff2d2d; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f0f0; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         
-        .editor { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px-10px rgba(0,0,0,0.1); margin-bottom: 20px; box-sizing: border-box; }
-        h2 { color: var(--shopee-red); font-size: 1.1rem; text-align: center; margin-top: 0; text-transform: uppercase; }
+        /* --- EDITOR --- */
+        .editor { width: 100%; max-width: 800px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; box-sizing: border-box; }
+        h2 { color: var(--shopee-red); font-size: 1.2rem; text-align: center; margin-top: 0; text-transform: uppercase; margin-bottom: 20px; }
         
+        .editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .editor-grid { grid-template-columns: 1fr; } }
+
+        .editor-column h3 { font-size: 0.9rem; color: #555; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
         label { font-weight: bold; font-size: 0.75rem; color: #888; display: block; margin: 10px 0 5px; text-transform: uppercase; }
         input, textarea { width: 100%; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
         
-        .upload-box { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 10px; cursor: pointer; font-size: 0.8rem; background: #fafafa; margin-bottom: 10px; }
+        .upload-box { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 10px; cursor: pointer; font-size: 0.8rem; background: #fafafa; margin-bottom: 10px; transition: 0.3s; }
+        .upload-box:hover { background: #eee; border-color: #aaa; }
         
-        /* Botão discreto para trocar o template quando necessário */
-        .settings-btn { font-size: 0.65rem; color: #aaa; text-align: right; cursor: pointer; text-decoration: underline; margin-bottom: 10px; }
+        /* Área de setup agora visível por padrão */
+        .setup-area { background: #fff0f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffcccc; text-align: center;}
+        .settings-btn { font-size: 0.7rem; color: #777; cursor: pointer; text-decoration: underline; margin-bottom: 5px; display: inline-block; }
+        .info-text { font-size: 0.65rem; color: #999; margin-top: 5px; }
 
-        /* --- ÁREA DO PREVIEW --- */
-        #post-design { 
-            width: 450px; height: 562px; 
-            background-color: #eee; 
+        /* --- ÁREA DOS PREVIEWS --- */
+        .previews-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .preview-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .preview-title { font-weight: bold; color: #555; margin-bottom: 10px; }
+
+        /* ESTILOS GERAIS DOS CANVASE */
+        .design-canvas { 
+            background-color: #ddd; /* Cor de fundo se não houver template */
             background-size: 100% 100%; 
+            background-repeat: no-repeat;
             position: relative; 
-            border-radius: 10px; 
+            border-radius: 12px; 
             overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            /* Adicionado transição suave ao carregar imagem */
+            transition: background-image 0.3s ease-in-out;
         }
 
         .content-area { 
-            position: absolute; top: 155px; left: 50%; transform: translateX(-50%); 
-            width: 360px; height: 365px; display: flex; flex-direction: column; 
+            position: absolute; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            display: flex; flex-direction: column; 
             align-items: center; box-sizing: border-box;
         }
 
-        .image-wrapper { width: 100%; height: 210px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; overflow: hidden; }
+        .image-wrapper { width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; overflow: hidden; }
         .img-display { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
 
         .text-desc { 
-            text-align: center; font-size: 13px; font-weight: 700; color: #333; 
-            text-transform: uppercase; line-height: 1.3; height: 55px; 
+            text-align: center; font-weight: 700; color: #333; 
+            text-transform: uppercase; line-height: 1.3;
             display: flex; align-items: center; justify-content: center;
         }
         
-        .price-container { display: flex; flex-direction: column; align-items: center; margin-top: auto; padding-bottom: 15px; }
-        .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+        .price-container { display: flex; flex-direction: column; align-items: center; margin-top: auto; }
+        .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
         .promo-button { 
-            background: var(--shopee-red); color: white; width: 180px; height: 45px; 
+            background: var(--shopee-red); color: white; 
             display: flex; align-items: center; justify-content: center; 
-            border-radius: 12px; font-weight: 900; font-size: 20px; text-transform: uppercase; 
+            border-radius: 10px; font-weight: 900; text-transform: uppercase; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .download-btn { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1rem; }
+        /* --- ESPECÍFICO DO FEED (4:5) --- */
+        #feed-design { width: 360px; height: 450px; }
+        #feed-design .content-area { top: 125px; width: 290px; height: 290px; }
+        #feed-design .image-wrapper { height: 170px; }
+        #feed-design .text-desc { font-size: 12px; height: 45px; }
+        #feed-design .price-container { padding-bottom: 10px; }
+        #feed-design .price-old { font-size: 13px; }
+        #feed-design .promo-button { width: 150px; height: 40px; font-size: 18px; }
+
+        /* --- ESPECÍFICO DO STORY (9:16) --- */
+        #story-design { width: 324px; height: 576px; }
+        #story-design .content-area { top: 155px; width: 280px; height: 360px; }
+        #story-design .image-wrapper { height: 185px; margin-bottom: 10px; }
+        #story-design .text-desc { font-size: 14px; height: 60px; margin-bottom: 5px; }
+
+        /* AQUI ESTÁ A MUDANÇA: Adicionamos a linha do margin-top */
+        #story-design .price-container { 
+        padding-bottom: 5px; 
+        margin-top: -30px; /* <-- ESSA LINHA NOVA É QUE FAZ SUBIR! */
+}
+
+#story-design .price-old { font-size: 15px; }
+#story-design .promo-button { width: 170px; height: 45px; font-size: 20px; }
+
+        /* BOTÕES DE DOWNLOAD */
+        .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; transition: 0.2s; }
+        .download-btn:hover { background: #219653; }
+        .btn-story { background: #8e44ad; }
+        .btn-story:hover { background: #732d91; }
+        
+        /* Esconde o input file feio */
+        .input-file-hidden { display: none; }
+        /* Botão bonito para selecionar template */
+        .btn-select-template {
+            background: #ffcccc; color: var(--shopee-red); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: inline-block;
+        }
     </style>
 </head>
 <body>
 
     <div class="editor">
-        <h2>Cofre de Ofertas</h2>
+        <h2>Editor de Ofertas</h2>
         
-        <div id="setup-area" style="display: none;">
-            <label>Configurar Template (feed.png)</label>
-            <input type="file" accept="image/*" onchange="saveTemplate(event)">
-            <p style="font-size: 0.6rem; color: #666;">Isso será feito apenas uma vez neste aparelho.</p>
-        </div>
-        <div id="change-template" class="settings-btn" onclick="toggleSetup()">Trocar imagem de fundo</div>
+        <div class="editor-grid">
+            <div class="editor-column">
+                <h3>1. Dados do Produto</h3>
+                <label>Imagem do Produto</label>
+                <div class="upload-box" onclick="document.getElementById('inputImg').click()">
+                    <span style="font-size: 1.2rem;">📸</span><br>Selecionar Foto
+                    <input type="file" id="inputImg" hidden accept="image/*" onchange="updateProductImg(event)">
+                </div>
 
-        <label>Imagem do Produto</label>
-        <div class="upload-box" onclick="document.getElementById('inputImg').click()">
-            Selecionar Produto
-            <input type="file" id="inputImg" hidden accept="image/*" onchange="updateProductImg(event)">
-        </div>
+                <label>Descrição</label>
+                <textarea id="inDesc" rows="3" placeholder="Ex: Fone Bluetooth Sem Fio..." oninput="update()"></textarea>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Preço Antigo</label>
+                        <input type="text" id="inOld" placeholder="R$ 0,00" oninput="update()">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Preço Promo</label>
+                        <input type="text" id="inPromo" placeholder="R$ 0,00" oninput="update()">
+                    </div>
+                </div>
+            </div>
 
-        <label>Informações</label>
-        <textarea id="inDesc" rows="2" placeholder="Descrição do Produto" oninput="update()"></textarea>
-        <input type="text" id="inOld" placeholder="Valor Antigo" oninput="update()">
-        <input type="text" id="inPromo" placeholder="Valor Promocional" oninput="update()">
-        
-        <button id="btnDown" class="download-btn" onclick="download()">BAIXAR POST</button>
+            <div class="editor-column">
+                <h3>2. Templates (Fundo)</h3>
+                <p style="font-size: 0.7rem; color: #666;">Selecione os fundos para esta sessão.</p>
+                
+                <label>Fundo do Feed (4:5)</label>
+                <div id="setup-feed" class="setup-area">
+                    <label for="file-feed" class="btn-select-template">Selecionar Imagem Feed</label>
+                    <input id="file-feed" class="input-file-hidden" type="file" accept="image/*" onchange="loadTemplate(event, 'feed')">
+                    <p id="status-feed" class="info-text">Nenhum fundo selecionado.</p>
+                </div>
+
+                <label style="margin-top: 20px;">Fundo do Story (9:16)</label>
+                <div id="setup-story" class="setup-area">
+                    <label for="file-story" class="btn-select-template">Selecionar Imagem Story</label>
+                    <input id="file-story" class="input-file-hidden" type="file" accept="image/*" onchange="loadTemplate(event, 'story')">
+                    <p id="status-story" class="info-text">Nenhum fundo selecionado.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="post-design">
-        <div class="content-area">
-            <div class="image-wrapper">
-                <img id="viewImg" class="img-display" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+    <div class="previews-container">
+        
+        <div class="preview-wrapper">
+            <div class="preview-title">Feed (Postagem)</div>
+            <div id="feed-design" class="design-canvas">
+                <div class="content-area">
+                    <div class="image-wrapper">
+                        <img id="viewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    </div>
+                    <div id="viewDesc" class="text-desc">AGUARDANDO DADOS...</div>
+                    <div class="price-container">
+                        <div id="viewOld" class="price-old">R$ 0,00</div>
+                        <div id="viewPromo" class="promo-button">VALOR</div>
+                    </div>
+                </div>
             </div>
-            <div id="viewDesc" class="text-desc">AGUARDANDO DADOS...</div>
-            <div class="price-container">
-                <div id="viewOld" class="price-old">R$ 0,00</div>
-                <div id="viewPromo" class="promo-button">VALOR</div>
-            </div>
+            <button class="download-btn" onclick="download('feed-design', 'post-feed')">BAIXAR FEED</button>
         </div>
+
+        <div class="preview-wrapper">
+            <div class="preview-title">Story (Vertical)</div>
+            <div id="story-design" class="design-canvas">
+                <div class="content-area">
+                    <div class="image-wrapper">
+                        <img id="storyViewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    </div>
+                    <div id="storyViewDesc" class="text-desc">AGUARDANDO DADOS...</div>
+                    <div class="price-container">
+                        <div id="storyViewOld" class="price-old">R$ 0,00</div>
+                        <div id="storyViewPromo" class="promo-button">VALOR</div>
+                    </div>
+                </div>
+            </div>
+            <button class="download-btn btn-story" onclick="download('story-design', 'post-story')">BAIXAR STORY</button>
+        </div>
+
     </div>
 
 <script>
-    // Ao abrir o app, verifica se já existe um template salvo
-    window.onload = function() {
-        const savedTemplate = localStorage.getItem('shopeeTemplate');
-        if (savedTemplate) {
-            document.getElementById('post-design').style.backgroundImage = `url(${savedTemplate})`;
-            document.getElementById('setup-area').style.display = 'none';
-        } else {
-            document.getElementById('setup-area').style.display = 'block';
-        }
-    }
+    // REMOVIDO: Não tentamos mais carregar do localStorage ao iniciar
+    // window.onload = function() { ... }
 
-    function toggleSetup() {
-        const area = document.getElementById('setup-area');
-        area.style.display = area.style.display === 'none' ? 'block' : 'none';
-    }
+    // Função modificada: Carrega o template apenas para a sessão atual
+    function loadTemplate(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    function saveTemplate(event) {
         const reader = new FileReader();
+        // Quando o arquivo termina de ser lido:
         reader.onload = function() {
             const base64 = reader.result;
-            localStorage.setItem('shopeeTemplate', base64);
-            document.getElementById('post-design').style.backgroundImage = `url(${base64})`;
-            document.getElementById('setup-area').style.display = 'none';
-            alert("Template salvo com sucesso neste aparelho!");
+            let elementId, statusId;
+
+            if (type === 'feed') {
+                elementId = 'feed-design';
+                statusId = 'status-feed';
+            } else {
+                elementId = 'story-design';
+                statusId = 'status-story';
+            }
+
+            // 1. Aplica a imagem de fundo imediatamente
+            document.getElementById(elementId).style.backgroundImage = `url(${base64})`;
+            
+            // 2. Atualiza o texto de status e muda a cor da caixa para indicar sucesso
+            const statusTxt = document.getElementById(statusId);
+            statusTxt.innerText = "Fundo carregado com sucesso!";
+            statusTxt.style.color = "green";
+            document.getElementById('setup-' + type).style.background = "#e8f5e9";
+            document.getElementById('setup-' + type).style.borderColor = "#c8e6c9";
+
+            // IMPORTANTE: Removemos a tentativa de salvar no localStorage (localStorage.setItem)
+            // Isso elimina o erro de "imagem muito grande".
         };
-        reader.readAsDataURL(event.target.files[0]);
+        // Lê o arquivo como uma URL de dados
+        reader.readAsDataURL(file);
     }
 
+    // Atualiza a imagem do produto nos DOIS previews
     function updateProductImg(event) {
+        const file = event.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
-        reader.onload = function() { document.getElementById('viewImg').src = reader.result; };
-        reader.readAsDataURL(event.target.files[0]);
+        reader.onload = function() { 
+            document.getElementById('viewImg').src = reader.result; 
+            document.getElementById('storyViewImg').src = reader.result; 
+        };
+        reader.readAsDataURL(file);
     }
 
     function formatCurrency(v) {
         if (!v) return "";
-        let clean = v.replace("R$", "").trim();
+        let clean = v.replace(/R\$/gi, "").trim();
+        if (clean === "") return "";
         return "R$ " + clean;
     }
 
+    // Atualiza os textos nos DOIS previews
     function update() {
-        document.getElementById('viewDesc').innerText = document.getElementById('inDesc').value.toUpperCase() || "DESCRIÇÃO";
-        document.getElementById('viewOld').innerText = formatCurrency(document.getElementById('inOld').value) || "R$ 0,00";
-        document.getElementById('viewPromo').innerText = formatCurrency(document.getElementById('inPromo').value) || "VALOR";
+        const desc = document.getElementById('inDesc').value.toUpperCase() || "DESCRIÇÃO DO PRODUTO";
+        const old = formatCurrency(document.getElementById('inOld').value) || "R$ 0,00";
+        const promo = formatCurrency(document.getElementById('inPromo').value) || "VALOR";
+
+        // Atualiza Feed
+        document.getElementById('viewDesc').innerText = desc;
+        document.getElementById('viewOld').innerText = old;
+        document.getElementById('viewPromo').innerText = promo;
+
+        // Atualiza Story
+        document.getElementById('storyViewDesc').innerText = desc;
+        document.getElementById('storyViewOld').innerText = old;
+        document.getElementById('storyViewPromo').innerText = promo;
     }
 
-    async function download() {
-        const area = document.querySelector("#post-design");
-        const canvas = await html2canvas(area, { scale: 3, useCORS: true });
+    // Função de download
+    async function download(elementId, filename) {
+        const area = document.getElementById(elementId);
+        // Verifica se tem fundo carregado antes de baixar
+        if (area.style.backgroundImage === '') {
+            alert("Atenção: Você não selecionou uma imagem de fundo (template) para este formato.");
+            return;
+        }
+
+        // Usa scale 3 para garantir alta qualidade
+        const canvas = await html2canvas(area, { scale: 3, useCORS: true, backgroundColor: null });
         const link = document.createElement('a');
-        link.download = 'post-shopee-premium.png';
+        link.download = `${filename}-${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
     }
