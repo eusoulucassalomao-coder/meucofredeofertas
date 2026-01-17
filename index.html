@@ -3,23 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v8 (Botão Box Real)</title>
+    <title>Cofre de Ofertas v14 (Controles Agrupados)</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --success-bg: #e8f5e9; --error-bg: #fff0f0; }
+        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --success-bg: #e8f5e9; --error-bg: #fff0f0; --panel-border: #e0e0e0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         
         /* --- EDITOR --- */
         .editor { width: 100%; max-width: 800px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; box-sizing: border-box; }
         h2 { color: var(--shopee-red); font-size: 1.2rem; text-align: center; margin-top: 0; text-transform: uppercase; margin-bottom: 20px; }
-        
         .editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 600px) { .editor-grid { grid-template-columns: 1fr; } }
-
         .editor-column h3 { font-size: 0.9rem; color: #555; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
         label { font-weight: bold; font-size: 0.75rem; color: #888; display: block; margin: 10px 0 5px; text-transform: uppercase; }
         input, textarea { width: 100%; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
-        
         .upload-box { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 10px; cursor: pointer; font-size: 0.8rem; background: #fafafa; margin-bottom: 10px; transition: 0.3s; }
         .upload-box:hover { background: #eee; border-color: #aaa; }
         
@@ -34,24 +31,42 @@
         .reset-btn { font-size: 0.7rem; color: #999; text-decoration: underline; cursor: pointer; margin-top: 10px; display: inline-block;}
 
         /* --- ÁREA DOS PREVIEWS E CONTROLES --- */
-        .previews-container { display: flex; gap: 30px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 1000px; }
+        .previews-container { display: flex; gap: 30px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 1100px; }
         .preview-wrapper { display: flex; gap: 15px; align-items: flex-start; }
+        @media (max-width: 500px) { .preview-wrapper { flex-wrap: wrap; justify-content: center; } }
         .canvas-column { display: flex; flex-direction: column; align-items: center; }
         .preview-title { font-weight: bold; color: #555; margin-bottom: 10px; }
 
-        /* --- PAINEL DE CONTROLE DE TAMANHO --- */
-        .size-controls {
-            background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; gap: 10px; min-width: 140px;
+        /* --- PAINEL DE CONTROLE REDESENHADO (v14) --- */
+        .control-panel {
+            background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; min-width: 160px; overflow: hidden; border: 1px solid var(--panel-border);
         }
-        .control-group { display: flex; flex-direction: column; }
-        .control-label { font-size: 0.7rem; font-weight: bold; color: #777; margin-bottom: 3px;}
-        .control-actions { display: flex; align-items: center; justify-content: space-between; background: #f5f5f5; border-radius: 5px; padding: 2px;}
-        .btn-size {
-            width: 25px; height: 25px; border: none; background: #ddd; color: #333; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        .panel-header { background: #f9f9f9; padding: 10px; text-align: center; font-weight: 800; color: #555; font-size: 0.85rem; border-bottom: 1px solid var(--panel-border); text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        /* Novos Grupos Unificados */
+        .unified-group {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 6px; /* Espaço entre a linha de tamanho e a linha de setas */
         }
-        .btn-size:hover { background: #ccc; }
+        .unified-group:last-child { border-bottom: none; }
+
+        .control-label { font-size: 0.7rem; font-weight: 800; color: #333; margin-bottom: 2px; display: block; text-transform: uppercase;}
+        .special-label { color: var(--shopee-red); }
+        
+        /* Botões de Tamanho/Largura (+/-) */
+        .size-actions { display: flex; align-items: center; justify-content: space-between; background: #f0f0f0; border-radius: 6px; padding: 3px;}
+        .btn-size { width: 26px; height: 26px; border: 1px solid #ddd; background: white; color: #333; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-size:hover { background: #eee; }
         .size-display { font-size: 0.8rem; font-weight: bold; color: #555; }
+
+        /* Botões de Movimento (Setas) */
+        .move-actions { display: flex; gap: 3px; justify-content: center; background: #f0f0f0; padding: 3px; border-radius: 6px;}
+        .btn-move { width: 24px; height: 24px; border: 1px solid #ddd; background: white; color: #555; font-size: 0.8rem; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-move:hover { background: #eee; color: #000; border-color: #ccc;}
 
         /* ESTILOS GERAIS DOS CANVASE */
         .design-canvas { 
@@ -60,58 +75,48 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.08); transition: background-image 0.3s ease-in-out;
         }
         .content-area { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
+        .movable { position: relative; }
         .image-wrapper { width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; overflow: hidden; }
         .img-display { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
-        .text-desc { text-align: center; font-weight: 700; color: #333; text-transform: uppercase; line-height: 1.3; display: flex; align-items: center; justify-content: center; }
+        
+        /* ESTILO BASE DA DESCRIÇÃO (Aplicado a ambos) */
+        .text-desc { 
+            text-align: center; font-weight: 700; color: #333; text-transform: uppercase; line-height: 1.3; display: flex; align-items: center; justify-content: center;
+            padding: 0 20px; box-sizing: border-box; width: 100%;
+        }
+        
         .price-container { display: flex; flex-direction: column; align-items: center; margin-top: auto; }
         .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
-        
-        /* MUDANÇA PRINCIPAL NO CSS DO BOTÃO BASE */
         .promo-button { 
-            background: var(--shopee-red); color: white; 
-            display: inline-flex; /* Mudado para inline-flex para ajustar ao conteúdo */
-            align-items: center; justify-content: center; 
-            border-radius: 10px; font-weight: 900; text-transform: uppercase; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            white-space: nowrap;
-            /* O segredo: Padding usando EM. Se a fonte cresce, o padding cresce junto */
-            padding: 0.4em 1em; 
-            /* Removemos width e height fixos aqui */
+            background: var(--shopee-red); color: white; display: inline-flex; align-items: center; justify-content: center; 
+            border-radius: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap; padding: 0.4em 1em; 
         }
 
         /* --- ESPECÍFICO DO FEED (4:5) --- */
         #feed-design { 
             width: 360px; height: 450px;
-            --f-desc: 12px; --f-old: 13px; --f-btn: 18px;
+            --f-desc-size: 12px; --f-old-size: 13px; --f-btn-size: 18px;
+            --f-img-top: 0px; --f-img-left: 0px; --f-desc-top: 0px; --f-desc-left: 0px; --f-old-top: 0px; --f-old-left: 0px; --f-btn-top: 0px; --f-btn-left: 0px;
         }
         #feed-design .content-area { top: 125px; width: 290px; height: 290px; }
-        #feed-design .image-wrapper { height: 170px; }
-        #feed-design .text-desc { font-size: var(--f-desc); height: 45px; }
+        #feed-design .image-wrapper { height: 170px; top: var(--f-img-top); left: var(--f-img-left); }
+        #feed-design .text-desc { font-size: var(--f-desc-size); height: 45px; top: var(--f-desc-top); left: var(--f-desc-left); }
         #feed-design .price-container { padding-bottom: 10px; }
-        #feed-design .price-old { font-size: var(--f-old); }
-        
-        /* MUDANÇA NO FEED: Apenas aplica o tamanho da fonte */
-        #feed-design .promo-button { 
-            font-size: var(--f-btn);
-            /* Width e Height foram removidos daqui */
-        }
+        #feed-design .price-old { font-size: var(--f-old-size); top: var(--f-old-top); left: var(--f-old-left); }
+        #feed-design .promo-button { font-size: var(--f-btn-size); top: var(--f-btn-top); left: var(--f-btn-left); }
 
         /* --- ESPECÍFICO DO STORY (9:16) --- */
         #story-design { 
             width: 324px; height: 576px;
-            --s-desc: 14px; --s-old: 15px; --s-btn: 20px;
+            --s-desc-size: 14px; --s-old-size: 15px; --s-btn-size: 20px;
+            --s-img-top: 0px; --s-img-left: 0px; --s-desc-top: -20px; --s-desc-left: 0px; --s-old-top: 0px; --s-old-left: 0px; --s-btn-top: 0px; --s-btn-left: 0px;
         }
         #story-design .content-area { top: 155px; width: 280px; height: 360px; }
-        #story-design .image-wrapper { height: 185px; margin-bottom: 10px; }
-        #story-design .text-desc { font-size: var(--s-desc); height: 60px; margin-bottom: 5px; position: relative; top: -20px; }
+        #story-design .image-wrapper { height: 185px; margin-bottom: 10px; top: var(--s-img-top); left: var(--s-img-left); }
+        #story-design .text-desc { font-size: var(--s-desc-size); height: 60px; margin-bottom: 5px; top: var(--s-desc-top); left: var(--s-desc-left); }
         #story-design .price-container { padding-bottom: 5px; }
-        #story-design .price-old { font-size: var(--s-old); }
-
-        /* MUDANÇA NO STORY: Apenas aplica o tamanho da fonte */
-        #story-design .promo-button { 
-            font-size: var(--s-btn);
-             /* Width e Height foram removidos daqui */
-        }
+        #story-design .price-old { font-size: var(--s-old-size); top: var(--s-old-top); left: var(--s-old-left); }
+        #story-design .promo-button { font-size: var(--s-btn-size); top: var(--s-btn-top); left: var(--s-btn-left); }
 
         /* BOTÕES DOWNLOAD */
         .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; transition: 0.2s; }
@@ -123,8 +128,7 @@
 <body>
 
     <div class="editor">
-        <h2>Editor de Ofertas v8</h2>
-        
+        <h2>Editor Visual Completo (v14)</h2>
         <div class="editor-grid">
             <div class="editor-column">
                 <h3>1. Dados do Produto</h3>
@@ -133,43 +137,28 @@
                     <span style="font-size: 1.2rem;">📸</span><br>Selecionar Foto
                     <input type="file" id="inputImg" hidden accept="image/*" onchange="updateProductImg(event)">
                 </div>
-
                 <label>Descrição</label>
                 <textarea id="inDesc" rows="3" placeholder="Ex: Fone Bluetooth Sem Fio..." oninput="update()"></textarea>
-                
                 <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label>Preço Antigo</label>
-                        <input type="text" id="inOld" placeholder="R$ 0,00" oninput="update()">
-                    </div>
-                    <div style="flex: 1;">
-                        <label>Preço Promo</label>
-                        <input type="text" id="inPromo" placeholder="R$ 0,00" oninput="update()">
-                    </div>
+                    <div style="flex: 1;"><label>Preço Antigo</label><input type="text" id="inOld" placeholder="R$ 0,00" oninput="update()"></div>
+                    <div style="flex: 1;"><label>Preço Promo</label><input type="text" id="inPromo" placeholder="R$ 0,00" oninput="update()"></div>
                 </div>
             </div>
-
             <div class="editor-column">
                 <h3>2. Templates (Fundo)</h3>
-                <p style="font-size: 0.7rem; color: #666;">Suporta alta qualidade (Banco de Dados).</p>
-                
                 <label>Fundo do Feed (4:5)</label>
                 <div id="setup-feed" class="setup-area">
                     <label for="file-feed" class="btn-select-template">Selecionar Imagem Feed</label>
                     <input id="file-feed" class="input-file-hidden" type="file" accept="image/*" onchange="handleTemplateSelect(event, 'feed')">
                     <p id="status-feed" class="info-text">Nenhum fundo salvo.</p>
                 </div>
-
                 <label style="margin-top: 20px;">Fundo do Story (9:16)</label>
                 <div id="setup-story" class="setup-area">
                     <label for="file-story" class="btn-select-template">Selecionar Imagem Story</label>
                     <input id="file-story" class="input-file-hidden" type="file" accept="image/*" onchange="handleTemplateSelect(event, 'story')">
                     <p id="status-story" class="info-text">Nenhum fundo salvo.</p>
                 </div>
-                
-                <div style="text-align: center;">
-                    <span class="reset-btn" onclick="clearTemplates()">Limpar Templates Salvos</span>
-                </div>
+                <div style="text-align: center;"><span class="reset-btn" onclick="clearTemplates()">Limpar Templates Salvos</span></div>
             </div>
         </div>
     </div>
@@ -181,42 +170,41 @@
                 <div class="preview-title">Feed (Postagem)</div>
                 <div id="feed-design" class="design-canvas">
                     <div class="content-area">
-                        <div class="image-wrapper"><img id="viewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
-                        <div id="viewDesc" class="text-desc">AGUARDANDO DADOS...</div>
+                        <div class="image-wrapper movable"><img id="viewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
+                        <div id="viewDesc" class="text-desc movable">AGUARDANDO DADOS...</div>
                         <div class="price-container">
-                            <div id="viewOld" class="price-old">R$ 0,00</div>
-                            <div id="viewPromo" class="promo-button">VALOR</div>
+                            <div id="viewOld" class="price-old movable">R$ 0,00</div>
+                            <div id="viewPromo" class="promo-button movable">VALOR</div>
                         </div>
                     </div>
                 </div>
                 <button class="download-btn" onclick="download('feed-design', 'post-feed')">BAIXAR FEED</button>
             </div>
             
-            <div class="size-controls">
-                <div style="font-weight: bold; text-align: center; margin-bottom: 5px;">Tamanhos Feed</div>
-                <div class="control-group">
-                    <span class="control-label">Descrição</span>
-                    <div class="control-actions">
-                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-desc', -1)">-</button>
-                        <span id="disp-f-desc" class="size-display">12</span>
-                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-desc', 1)">+</button>
-                    </div>
+            <div class="control-panel">
+                <div class="panel-header">Ajustes Feed</div>
+                
+                <div class="unified-group">
+                    <span class="control-label">Imagem Produto</span>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'left', 2)">➡️</button></div>
                 </div>
-                 <div class="control-group">
+
+                <div class="unified-group">
+                    <span class="control-label">Descrição (Fonte)</span>
+                    <div class="size-actions"><button class="btn-size" onclick="adjustValue('feed-design', '--f-desc-size', -1)">-</button><span id="disp-f-desc-size" class="size-display">12</span><button class="btn-size" onclick="adjustValue('feed-design', '--f-desc-size', 1)">+</button></div>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'left', 2)">➡️</button></div>
+                </div>
+                
+                <div class="unified-group">
                     <span class="control-label">Preço Antigo</span>
-                    <div class="control-actions">
-                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-old', -1)">-</button>
-                        <span id="disp-f-old" class="size-display">13</span>
-                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-old', 1)">+</button>
-                    </div>
+                    <div class="size-actions"><button class="btn-size" onclick="adjustValue('feed-design', '--f-old-size', -1)">-</button><span id="disp-f-old-size" class="size-display">13</span><button class="btn-size" onclick="adjustValue('feed-design', '--f-old-size', 1)">+</button></div>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('feed-design', '--f-old-top', '--f-old-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-old-top', '--f-old-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-old-top', '--f-old-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-old-top', '--f-old-left', 'left', 2)">➡️</button></div>
                 </div>
-                 <div class="control-group">
-                    <span class="control-label" style="color: var(--shopee-red);">Tamanho Botão (Box)</span>
-                    <div class="control-actions">
-                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-btn', -1)">-</button>
-                        <span id="disp-f-btn" class="size-display">18</span>
-                        <button class="btn-size" onclick="adjustFontSize('feed-design', '--f-btn', 1)">+</button>
-                    </div>
+                
+                <div class="unified-group">
+                    <span class="control-label special-label">Botão (Box)</span>
+                    <div class="size-actions"><button class="btn-size" onclick="adjustValue('feed-design', '--f-btn-size', -1)">-</button><span id="disp-f-btn-size" class="size-display">18</span><button class="btn-size" onclick="adjustValue('feed-design', '--f-btn-size', 1)">+</button></div>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'left', 2)">➡️</button></div>
                 </div>
             </div>
         </div>
@@ -226,42 +214,41 @@
                 <div class="preview-title">Story (Vertical)</div>
                 <div id="story-design" class="design-canvas">
                     <div class="content-area">
-                        <div class="image-wrapper"><img id="storyViewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
-                        <div id="storyViewDesc" class="text-desc">AGUARDANDO DADOS...</div>
+                        <div class="image-wrapper movable"><img id="storyViewImg" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
+                        <div id="storyViewDesc" class="text-desc movable">AGUARDANDO DADOS...</div>
                         <div class="price-container">
-                            <div id="storyViewOld" class="price-old">R$ 0,00</div>
-                            <div id="storyViewPromo" class="promo-button">VALOR</div>
+                            <div id="storyViewOld" class="price-old movable">R$ 0,00</div>
+                            <div id="storyViewPromo" class="promo-button movable">VALOR</div>
                         </div>
                     </div>
                 </div>
                 <button class="download-btn btn-story" onclick="download('story-design', 'post-story')">BAIXAR STORY</button>
             </div>
 
-             <div class="size-controls" style="border-top: 3px solid #8e44ad;">
-                <div style="font-weight: bold; text-align: center; margin-bottom: 5px;">Tamanhos Story</div>
-                <div class="control-group">
-                    <span class="control-label">Descrição</span>
-                    <div class="control-actions">
-                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-desc', -1)">-</button>
-                        <span id="disp-s-desc" class="size-display">14</span>
-                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-desc', 1)">+</button>
-                    </div>
+             <div class="control-panel" style="border-color: #8e44ad;">
+                <div class="panel-header" style="background: #f4eafc; color: #8e44ad;">Ajustes Story</div>
+                
+                <div class="unified-group">
+                    <span class="control-label">Imagem Produto</span>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'left', 2)">➡️</button></div>
                 </div>
-                 <div class="control-group">
+
+                <div class="unified-group">
+                    <span class="control-label">Descrição (Fonte)</span>
+                    <div class="size-actions"><button class="btn-size" onclick="adjustValue('story-design', '--s-desc-size', -1)">-</button><span id="disp-s-desc-size" class="size-display">14</span><button class="btn-size" onclick="adjustValue('story-design', '--s-desc-size', 1)">+</button></div>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'left', 2)">➡️</button></div>
+                </div>
+
+                <div class="unified-group">
                     <span class="control-label">Preço Antigo</span>
-                    <div class="control-actions">
-                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-old', -1)">-</button>
-                        <span id="disp-s-old" class="size-display">15</span>
-                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-old', 1)">+</button>
-                    </div>
+                    <div class="size-actions"><button class="btn-size" onclick="adjustValue('story-design', '--s-old-size', -1)">-</button><span id="disp-s-old-size" class="size-display">15</span><button class="btn-size" onclick="adjustValue('story-design', '--s-old-size', 1)">+</button></div>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'left', 2)">➡️</button></div>
                 </div>
-                 <div class="control-group">
-                    <span class="control-label" style="color: var(--shopee-red);">Tamanho Botão (Box)</span>
-                    <div class="control-actions">
-                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-btn', -1)">-</button>
-                        <span id="disp-s-btn" class="size-display">20</span>
-                        <button class="btn-size" onclick="adjustFontSize('story-design', '--s-btn', 1)">+</button>
-                    </div>
+
+                <div class="unified-group">
+                    <span class="control-label special-label">Botão (Box)</span>
+                    <div class="size-actions"><button class="btn-size" onclick="adjustValue('story-design', '--s-btn-size', -1)">-</button><span id="disp-s-btn-size" class="size-display">20</span><button class="btn-size" onclick="adjustValue('story-design', '--s-btn-size', 1)">+</button></div>
+                    <div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'left', 2)">➡️</button></div>
                 </div>
             </div>
         </div>
@@ -269,180 +256,53 @@
     </div>
 
 <script>
-    // --- FUNÇÃO DE AJUSTE DE TAMANHO ---
-    function adjustFontSize(elementId, variableName, change) {
+    // --- FUNÇÃO GENÉRICA DE AJUSTE DE VALOR (Tamanho/Largura) ---
+    function adjustValue(elementId, variableName, change) {
         const element = document.getElementById(elementId);
         const style = getComputedStyle(element);
-        let currentValueStr = style.getPropertyValue(variableName).trim();
-        let currentSize = parseInt(currentValueStr);
-        
+        let currentSize = parseInt(style.getPropertyValue(variableName).trim());
         let newSize = currentSize + change;
-
-        // Limites de segurança (Aumentei o máximo para 75 para permitir botões grandes)
-        if (newSize < 8) newSize = 8;
-        if (newSize > 75) newSize = 75;
-
+        // Limites de segurança (Mínimo 8px, Máximo 400px para permitir larguras grandes)
+        if (newSize < 8) newSize = 8; 
+        if (newSize > 400) newSize = 400; 
         element.style.setProperty(variableName, newSize + 'px');
-
         const displayId = 'disp' + variableName.replace('--', '-');
         document.getElementById(displayId).innerText = newSize;
     }
 
-
-    // --- CAMADA DE BANCO DE DADOS (IndexedDB) ---
-    const DB_NAME = 'OfertasDB_v8'; 
-    const DB_VERSION = 1;
-    const STORE_NAME = 'templates';
-    let db;
-
-    function initDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onupgradeneeded = (event) => {
-                db = event.target.result;
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME);
-                }
-            };
-            request.onsuccess = (event) => {
-                db = event.target.result;
-                resolve(db);
-            };
-            request.onerror = (event) => {
-                console.error("Erro DB:", event.target.error);
-                reject("Erro ao abrir banco de dados.");
-            };
-        });
+    // --- FUNÇÃO DE AJUSTE DE POSIÇÃO (Setas) ---
+    function adjustPos(containerId, varTop, varLeft, axis, change) {
+        const container = document.getElementById(containerId);
+        const style = getComputedStyle(container);
+        const targetVar = (axis === 'top') ? varTop : varLeft;
+        let currentValStr = style.getPropertyValue(targetVar).trim();
+        let currentVal = currentValStr ? parseInt(currentValStr) : 0;
+        let newVal = currentVal + change;
+        container.style.setProperty(targetVar, newVal + 'px');
     }
 
-    async function saveToDB(key, file) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([STORE_NAME], 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.put(file, key);
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    }
+    // --- BANCO DE DADOS (Mantido) ---
+    const DB_NAME = 'OfertasDB_v14'; const DB_VERSION = 1; const STORE_NAME = 'templates'; let db;
+    function initDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(DB_NAME, DB_VERSION); request.onupgradeneeded = (event) => { db = event.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) { db.createObjectStore(STORE_NAME); } }; request.onsuccess = (event) => { db = event.target.result; resolve(db); }; request.onerror = (event) => reject("Erro DB"); }); }
+    async function saveToDB(key, file) { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], 'readwrite'); const store = transaction.objectStore(STORE_NAME); const request = store.put(file, key); request.onsuccess = () => resolve(); request.onerror = () => reject(request.error); }); }
+    async function getFromDB(key) { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], 'readonly'); const store = transaction.objectStore(STORE_NAME); const request = store.get(key); request.onsuccess = (event) => resolve(event.target.result); request.onerror = () => reject(request.error); }); }
 
-    async function getFromDB(key) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([STORE_NAME], 'readonly');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.get(key);
-            request.onsuccess = (event) => resolve(event.target.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    // Inicialização
-    window.onload = async function() {
-        try {
-            await initDB();
-            loadSavedTemplate('feed');
-            loadSavedTemplate('story');
-        } catch (error) {
-            console.error("Falha DB:", error);
-        }
-    }
-
-    async function loadSavedTemplate(type) {
-        try {
-            const fileBlob = await getFromDB(type);
-            if (fileBlob) {
-                const objectURL = URL.createObjectURL(fileBlob);
-                applyBackground(type, objectURL);
-                updateUIStatus(type, true);
-            }
-        } catch (error) { console.error(error); }
-    }
-
-    async function handleTemplateSelect(event, type) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const objectURL = URL.createObjectURL(file);
-        applyBackground(type, objectURL);
-        try {
-            await saveToDB(type, file);
-            updateUIStatus(type, true);
-        } catch (error) {
-            alert("Erro ao salvar template. Usando apenas nesta sessão.");
-            updateUIStatus(type, false);
-        }
-    }
-
-    function applyBackground(type, url) {
-        const elementId = type === 'feed' ? 'feed-design' : 'story-design';
-        document.getElementById(elementId).style.backgroundImage = `url(${url})`;
-    }
-
-    function updateUIStatus(type, isSaved) {
-        const setupBox = document.getElementById('setup-' + type);
-        const statusTxt = document.getElementById('status-' + type);
-        if (isSaved) {
-            setupBox.classList.add('saved-ok');
-            statusTxt.innerText = "Fundo salvo!";
-        } else {
-            setupBox.classList.remove('saved-ok');
-            statusTxt.innerText = "Apenas nesta sessão.";
-        }
-    }
-
-    async function clearTemplates() {
-        if(confirm("Limpar templates salvos?")) {
-            try {
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                transaction.objectStore(STORE_NAME).clear();
-                location.reload();
-            } catch (e) { alert("Erro ao limpar."); }
-        }
-    }
+    window.onload = async function() { try { await initDB(); loadSavedTemplate('feed'); loadSavedTemplate('story'); } catch (error) { console.error("Falha DB:", error); } }
+    async function loadSavedTemplate(type) { try { const fileBlob = await getFromDB(type); if (fileBlob) { const objectURL = URL.createObjectURL(fileBlob); applyBackground(type, objectURL); updateUIStatus(type, true); } } catch (error) { console.error(error); } }
+    async function handleTemplateSelect(event, type) { const file = event.target.files[0]; if (!file) return; const objectURL = URL.createObjectURL(file); applyBackground(type, objectURL); try { await saveToDB(type, file); updateUIStatus(type, true); } catch (error) { alert("Erro salvar. Apenas sessão."); updateUIStatus(type, false); } }
+    function applyBackground(type, url) { document.getElementById(type === 'feed' ? 'feed-design' : 'story-design').style.backgroundImage = `url(${url})`; }
+    function updateUIStatus(type, isSaved) { const setupBox = document.getElementById('setup-' + type); const statusTxt = document.getElementById('status-' + type); if (isSaved) { setupBox.classList.add('saved-ok'); statusTxt.innerText = "Fundo salvo!"; } else { setupBox.classList.remove('saved-ok'); statusTxt.innerText = "Apenas nesta sessão."; } }
+    async function clearTemplates() { if(confirm("Limpar templates?")) { try { const transaction = db.transaction([STORE_NAME], 'readwrite'); transaction.objectStore(STORE_NAME).clear(); location.reload(); } catch (e) { alert("Erro ao limpar."); } } }
 
     // Funções de Edição
-    function updateProductImg(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function() { 
-            document.getElementById('viewImg').src = reader.result; 
-            document.getElementById('storyViewImg').src = reader.result; 
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function formatCurrency(v) {
-        if (!v) return "";
-        let clean = v.replace(/R\$/gi, "").trim();
-        if (clean === "") return "";
-        return "R$ " + clean;
-    }
-
+    function updateProductImg(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function() { document.getElementById('viewImg').src = reader.result; document.getElementById('storyViewImg').src = reader.result; }; reader.readAsDataURL(file); }
+    function formatCurrency(v) { if (!v) return ""; let clean = v.replace(/R\$/gi, "").trim(); if (clean === "") return ""; return "R$ " + clean; }
     function update() {
-        const desc = document.getElementById('inDesc').value.toUpperCase() || "DESCRIÇÃO DO PRODUTO";
-        const old = formatCurrency(document.getElementById('inOld').value) || "R$ 0,00";
-        const promo = formatCurrency(document.getElementById('inPromo').value) || "VALOR";
-
-        document.getElementById('viewDesc').innerText = desc;
-        document.getElementById('viewOld').innerText = old;
-        document.getElementById('viewPromo').innerText = promo;
-
-        document.getElementById('storyViewDesc').innerText = desc;
-        document.getElementById('storyViewOld').innerText = old;
-        document.getElementById('storyViewPromo').innerText = promo;
+        const desc = document.getElementById('inDesc').value.toUpperCase() || "DESCRIÇÃO DO PRODUTO"; const old = formatCurrency(document.getElementById('inOld').value) || "R$ 0,00"; const promo = formatCurrency(document.getElementById('inPromo').value) || "VALOR";
+        document.getElementById('viewDesc').innerText = desc; document.getElementById('viewOld').innerText = old; document.getElementById('viewPromo').innerText = promo;
+        document.getElementById('storyViewDesc').innerText = desc; document.getElementById('storyViewOld').innerText = old; document.getElementById('storyViewPromo').innerText = promo;
     }
-
-    async function download(elementId, filename) {
-        const area = document.getElementById(elementId);
-        if (area.style.backgroundImage === '' || area.style.backgroundImage === 'none') {
-            alert("Selecione um template de fundo antes de baixar.");
-            return;
-        }
-        const canvas = await html2canvas(area, { scale: 3, useCORS: true, backgroundColor: null });
-        const link = document.createElement('a');
-        link.download = `${filename}-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    }
+    async function download(elementId, filename) { const area = document.getElementById(elementId); if (area.style.backgroundImage === '' || area.style.backgroundImage === 'none') { alert("Selecione fundo antes."); return; } const canvas = await html2canvas(area, { scale: 3, useCORS: true, backgroundColor: null }); const link = document.createElement('a'); link.download = `${filename}-${Date.now()}.png`; link.href = canvas.toDataURL('image/png'); link.click(); }
 </script>
 </body>
 </html>
