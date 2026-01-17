@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v14 (Controles Agrupados)</title>
+    <title>Cofre de Ofertas v14 (Com Extrator de Link Local)</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --success-bg: #e8f5e9; --error-bg: #fff0f0; --panel-border: #e0e0e0; }
@@ -19,6 +19,12 @@
         input, textarea { width: 100%; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
         .upload-box { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 10px; cursor: pointer; font-size: 0.8rem; background: #fafafa; margin-bottom: 10px; transition: 0.3s; }
         .upload-box:hover { background: #eee; border-color: #aaa; }
+
+        /* ESTILO DA NOVA ÁREA DE LINK */
+        .link-extractor-area { background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px; }
+        .link-flex { display: flex; gap: 5px; }
+        .btn-extract { background: var(--shopee-red); color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; font-weight: bold; white-space: nowrap; transition: 0.2s;}
+        .btn-extract:hover { background: #d60000; }
         
         /* Área de setup */
         .setup-area { background: var(--error-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffcccc; text-align: center; transition: all 0.3s;}
@@ -132,6 +138,15 @@
         <div class="editor-grid">
             <div class="editor-column">
                 <h3>1. Dados do Produto</h3>
+
+                <div class="link-extractor-area">
+                    <label style="margin-top:0;">Extrair Título do Link (Shopee)</label>
+                    <div class="link-flex">
+                        <input type="text" id="inLink" placeholder="Cole o link aqui..." style="margin-bottom: 0;">
+                        <button class="btn-extract" onclick="extractTitleFromLink()">Extrair Título</button>
+                    </div>
+                    <p style="font-size: 0.65rem; color: #999; margin: 5px 0 0;">Cola o link e o sistema tenta ler o nome do produto nele.</p>
+                </div>
                 <label>Imagem do Produto</label>
                 <div class="upload-box" onclick="document.getElementById('inputImg').click()">
                     <span style="font-size: 1.2rem;">📸</span><br>Selecionar Foto
@@ -256,21 +271,64 @@
     </div>
 
 <script>
-    // --- FUNÇÃO GENÉRICA DE AJUSTE DE VALOR (Tamanho/Largura) ---
+    // --- NOVA FUNÇÃO: EXTRAIR TÍTULO DO LINK (LOCALMENTE) ---
+    function extractTitleFromLink() {
+        const linkInput = document.getElementById('inLink');
+        const url = linkInput.value.trim();
+        const descInput = document.getElementById('inDesc');
+
+        if (!url) { alert("Cole um link primeiro."); return; }
+
+        try {
+            // Tenta encontrar o padrão da Shopee: shopee.com.br/SLUG-DO-PRODUTO-i.123...
+            // O regex pega tudo depois da barra do domínio até encontrar "-i." ou "?" ou o fim da linha
+            const shopeeRegex = /shopee\.com\.br\/(.*?)(?:-i\.|\?|$)/i;
+            const match = url.match(shopeeRegex);
+
+            if (match && match[1]) {
+                let slug = match[1];
+                
+                // Decodifica caracteres especiais (ex: %C3%AD vira í) e troca hífens por espaços
+                let title = decodeURIComponent(slug).replace(/-/g, ' ');
+                
+                // Coloca em maiúsculo e joga na área de descrição
+                descInput.value = title.toUpperCase();
+                
+                // Atualiza os previews e limpa o link
+                update();
+                linkInput.value = ""; 
+            } else {
+               // Fallback simples: tenta pegar o último segmento de qualquer URL
+               try {
+                  const urlObj = new URL(url);
+                  const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+                  if (pathSegments.length > 0) {
+                       let lastSegment = pathSegments[pathSegments.length - 1];
+                       descInput.value = decodeURIComponent(lastSegment).replace(/-/g, ' ').toUpperCase();
+                       update();
+                  } else {
+                       alert("Não foi possível identificar um título neste link.");
+                  }
+               } catch(e) { alert("Link inválido."); }
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao tentar extrair o título.");
+        }
+    }
+
+    // --- FUNÇÕES EXISTENTES ---
     function adjustValue(elementId, variableName, change) {
         const element = document.getElementById(elementId);
         const style = getComputedStyle(element);
         let currentSize = parseInt(style.getPropertyValue(variableName).trim());
         let newSize = currentSize + change;
-        // Limites de segurança (Mínimo 8px, Máximo 400px para permitir larguras grandes)
         if (newSize < 8) newSize = 8; 
         if (newSize > 400) newSize = 400; 
         element.style.setProperty(variableName, newSize + 'px');
         const displayId = 'disp' + variableName.replace('--', '-');
         document.getElementById(displayId).innerText = newSize;
     }
-
-    // --- FUNÇÃO DE AJUSTE DE POSIÇÃO (Setas) ---
     function adjustPos(containerId, varTop, varLeft, axis, change) {
         const container = document.getElementById(containerId);
         const style = getComputedStyle(container);
@@ -280,21 +338,16 @@
         let newVal = currentVal + change;
         container.style.setProperty(targetVar, newVal + 'px');
     }
-
-    // --- BANCO DE DADOS (Mantido) ---
     const DB_NAME = 'OfertasDB_v14'; const DB_VERSION = 1; const STORE_NAME = 'templates'; let db;
     function initDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(DB_NAME, DB_VERSION); request.onupgradeneeded = (event) => { db = event.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) { db.createObjectStore(STORE_NAME); } }; request.onsuccess = (event) => { db = event.target.result; resolve(db); }; request.onerror = (event) => reject("Erro DB"); }); }
     async function saveToDB(key, file) { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], 'readwrite'); const store = transaction.objectStore(STORE_NAME); const request = store.put(file, key); request.onsuccess = () => resolve(); request.onerror = () => reject(request.error); }); }
     async function getFromDB(key) { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], 'readonly'); const store = transaction.objectStore(STORE_NAME); const request = store.get(key); request.onsuccess = (event) => resolve(event.target.result); request.onerror = () => reject(request.error); }); }
-
     window.onload = async function() { try { await initDB(); loadSavedTemplate('feed'); loadSavedTemplate('story'); } catch (error) { console.error("Falha DB:", error); } }
     async function loadSavedTemplate(type) { try { const fileBlob = await getFromDB(type); if (fileBlob) { const objectURL = URL.createObjectURL(fileBlob); applyBackground(type, objectURL); updateUIStatus(type, true); } } catch (error) { console.error(error); } }
     async function handleTemplateSelect(event, type) { const file = event.target.files[0]; if (!file) return; const objectURL = URL.createObjectURL(file); applyBackground(type, objectURL); try { await saveToDB(type, file); updateUIStatus(type, true); } catch (error) { alert("Erro salvar. Apenas sessão."); updateUIStatus(type, false); } }
     function applyBackground(type, url) { document.getElementById(type === 'feed' ? 'feed-design' : 'story-design').style.backgroundImage = `url(${url})`; }
     function updateUIStatus(type, isSaved) { const setupBox = document.getElementById('setup-' + type); const statusTxt = document.getElementById('status-' + type); if (isSaved) { setupBox.classList.add('saved-ok'); statusTxt.innerText = "Fundo salvo!"; } else { setupBox.classList.remove('saved-ok'); statusTxt.innerText = "Apenas nesta sessão."; } }
     async function clearTemplates() { if(confirm("Limpar templates?")) { try { const transaction = db.transaction([STORE_NAME], 'readwrite'); transaction.objectStore(STORE_NAME).clear(); location.reload(); } catch (e) { alert("Erro ao limpar."); } } }
-
-    // Funções de Edição
     function updateProductImg(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function() { document.getElementById('viewImg').src = reader.result; document.getElementById('storyViewImg').src = reader.result; }; reader.readAsDataURL(file); }
     function formatCurrency(v) { if (!v) return ""; let clean = v.replace(/R\$/gi, "").trim(); if (clean === "") return ""; return "R$ " + clean; }
     function update() {
