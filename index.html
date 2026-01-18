@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v18 (Wizard + Controles Corrigidos)</title>
+    <title>Cofre de Ofertas v19 (Wizard com Miniaturas)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --panel-border: #e0e0e0; --step-active: #007bff; }
@@ -30,11 +30,13 @@
         input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.3s; }
         input:focus, textarea:focus { border-color: var(--shopee-red); outline: none; }
 
-        /* Upload Box Stylish */
+        /* Upload Box Stylish (Com Miniaturas) */
         .upload-container-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .styled-upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; background: #fafafa; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
+        .styled-upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; background: #fafafa; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
         .styled-upload-box:hover { background: #f0f0f0; border-color: var(--shopee-red); }
-        .styled-upload-box i { font-size: 2rem; color: #999; margin-bottom: 10px; }
+        .upload-icon { font-size: 2rem; color: #999; margin-bottom: 10px; }
+        /* Estilo da Miniatura */
+        .upload-thumbnail { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none; /* Escondido por padrão */ }
         .file-status { font-size: 0.8rem; color: var(--success-green); margin-top: 5px; font-weight: bold; display: none; }
 
         /* Navigation Buttons */
@@ -121,19 +123,19 @@
             <h2>Etapa 1: Imagens do Produto e Fundos</h2>
             <div class="upload-container-grid">
                 <div class="styled-upload-box" onclick="document.getElementById('file-feed').click()">
-                    <i>🖼️</i>
+                    <img id="thumb-feed" class="upload-thumbnail" src=""> <i id="icon-feed" class="upload-icon">🖼️</i>
                     <label style="cursor: pointer;">Fundo do Feed (4:5)</label>
                     <input id="file-feed" type="file" hidden accept="image/*" onchange="handleFileSelect(event, 'feed', 'status-feed')">
                     <span id="status-feed" class="file-status">Imagem selecionada!</span>
                 </div>
                 <div class="styled-upload-box" onclick="document.getElementById('file-story').click()">
-                    <i>📱</i>
+                    <img id="thumb-story" class="upload-thumbnail" src=""> <i id="icon-story" class="upload-icon">📱</i>
                     <label style="cursor: pointer;">Fundo do Story (9:16)</label>
                     <input id="file-story" type="file" hidden accept="image/*" onchange="handleFileSelect(event, 'story', 'status-story')">
                     <span id="status-story" class="file-status">Imagem selecionada!</span>
                 </div>
                  <div class="styled-upload-box" onclick="document.getElementById('inputImg').click()" style="border-color: var(--shopee-red); background: #fff5f5;">
-                    <i style="color: var(--shopee-red);">📸</i>
+                    <img id="thumb-prod" class="upload-thumbnail" src=""> <i id="icon-prod" class="upload-icon" style="color: var(--shopee-red);">📸</i>
                     <label style="cursor: pointer; color: var(--shopee-red);">Imagem do Produto (PNG)</label>
                     <input type="file" id="inputImg" hidden accept="image/*" onchange="handleProductImg(event)">
                     <span id="status-prod" class="file-status" style="color: var(--shopee-red);">Imagem selecionada!</span>
@@ -224,4 +226,194 @@
             </div>
         </div>
 
-        <div class
+        <div class="nav-buttons">
+            <button class="btn-nav btn-prev" id="btnPrev" onclick="changeStep(-1)" disabled>Voltar</button>
+            <button class="btn-nav btn-next" id="btnNext" onclick="changeStep(1)">Continuar</button>
+        </div>
+    </div>
+
+<script>
+    let currentStep = 1;
+    const totalSteps = 4;
+
+    // --- LÓGICA DO WIZARD (ETAPAS) ---
+    function changeStep(direction) {
+        const newStep = currentStep + direction;
+        if (newStep < 1 || newStep > totalSteps) return;
+
+        // Validações
+        if (direction === 1) {
+             if (currentStep === 2 && !document.getElementById('step2Title').value.trim()) {
+                alert("Por favor, informe um título para o produto."); return;
+            }
+        }
+
+        currentStep = newStep;
+        updateWizardUI();
+
+        if (currentStep === 4) {
+            updateFinalPreviews();
+        }
+    }
+
+    function updateWizardUI() {
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active-step'));
+        document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active-step');
+
+        for (let i = 1; i <= totalSteps; i++) {
+            const indicator = document.getElementById(`indicator${i}`);
+            indicator.classList.remove('active', 'completed');
+            if (i < currentStep) indicator.classList.add('completed');
+            if (i === currentStep) indicator.classList.add('active');
+        }
+
+        document.getElementById('btnPrev').disabled = currentStep === 1;
+        document.getElementById('btnNext').textContent = currentStep === totalSteps ? "Concluir" : "Continuar";
+        if(currentStep === totalSteps) document.getElementById('btnNext').style.display = 'none'; else document.getElementById('btnNext').style.display = 'block';
+    }
+
+
+    // --- ETAPA 1: UPLOAD IMAGENS (ATUALIZADO COM MINIATURAS) ---
+    function handleFileSelect(event, type, statusId) {
+        const file = event.target.files[0];
+        if (file) {
+            const bgUrl = URL.createObjectURL(file);
+            // 1. Atualiza os canvas finais (invisíveis)
+            document.getElementById(type === 'feed' ? 'feed-design' : 'story-design').style.backgroundImage = `url(${bgUrl})`;
+            
+            // 2. Atualiza a miniatura na Etapa 1
+            const thumb = document.getElementById('thumb-' + type);
+            const icon = document.getElementById('icon-' + type);
+            thumb.src = bgUrl;
+            thumb.style.display = 'block';
+            icon.style.display = 'none';
+
+            // 3. Mostra status
+            document.getElementById(statusId).style.display = 'block';
+        }
+    }
+    function handleProductImg(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // 1. Atualiza as imagens finais (invisíveis)
+                document.getElementById('viewImgFeed').src = e.target.result;
+                document.getElementById('viewImgStory').src = e.target.result;
+
+                // 2. Atualiza a miniatura na Etapa 1
+                const thumb = document.getElementById('thumb-prod');
+                const icon = document.getElementById('icon-prod');
+                thumb.src = e.target.result;
+                thumb.style.display = 'block';
+                icon.style.display = 'none';
+
+                // 3. Mostra status
+                document.getElementById('status-prod').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+
+    // --- ETAPA 2: EXTRAÇÃO DE TÍTULO ---
+    function attemptTitleExtraction() {
+        const url = document.getElementById('step2Link').value.trim();
+        const titleArea = document.getElementById('step2Title');
+        if (!url) { alert("Cole um link primeiro."); return; }
+
+        let extractedTitle = "";
+        // Magalu (Link Longo)
+        if (url.includes('magazinevoce') || url.includes('magazineluiza')) {
+             try { const matches = url.match(/\.com\.br\/.*?\/(.*?)\/p\//i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){}
+        } 
+        // Shopee (Link Longo Antigo)
+        else if (url.includes('shopee.com.br') && url.includes('-i.')) {
+             try { const matches = url.match(/shopee\.com\.br\/(.*?)(?:-i\.|\?|$)/i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){}
+        }
+
+        // Links curtos (Aviso de segurança do navegador)
+        if (url.match(/(s\.shopee|amzn\.to|mercadolivre\.com\/sec|bit\.ly)/i) && !extractedTitle) {
+             alert("Links encurtados não contêm o nome do produto na URL. Por segurança, o navegador não pode acessá-los. Por favor, digite o título manualmente.");
+             titleArea.value = ""; titleArea.focus(); return;
+        }
+
+        if (extractedTitle && extractedTitle.length > 3) {
+            titleArea.value = extractedTitle.toUpperCase();
+        } else if (!extractedTitle) {
+            alert("Não foi possível extrair o título deste link. Por favor, digite manualmente.");
+            titleArea.focus();
+        }
+    }
+
+
+    // --- ETAPA 3: MÁSCARA DE MOEDA ---
+    function formatCurrencyInput(input) {
+        let value = input.value.replace(/\D/g, '');
+        value = (parseInt(value) / 100).toFixed(2) + '';
+        value = value.replace(".", ",");
+        value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+        input.value = "R$ " + value;
+    }
+
+    // --- ETAPA 4: ATUALIZAR PREVIEWS FINAIS ---
+    function updateFinalPreviews() {
+        const title = document.getElementById('step2Title').value || "TÍTULO DO PRODUTO";
+        const oldPrice = document.getElementById('step3OldPrice').value || "R$ 0,00";
+        const promoPrice = document.getElementById('step3PromoPrice').value || "VALOR";
+
+        document.getElementById('viewDescFeed').innerText = title;
+        document.getElementById('viewDescStory').innerText = title;
+
+        document.getElementById('viewOldFeed').innerText = oldPrice;
+        document.getElementById('viewOldStory').innerText = oldPrice;
+
+        document.getElementById('viewPromoFeed').innerText = promoPrice;
+        document.getElementById('viewPromoStory').innerText = promoPrice;
+    }
+
+
+    // --- FUNÇÕES DE CONTROLE E DOWNLOAD (CORRIGIDAS E ROBUSTAS) ---
+    function adjustValue(elementId, variableName, change) {
+        const element = document.getElementById(elementId);
+        const style = getComputedStyle(element);
+        let currentSize = parseInt(style.getPropertyValue(variableName).trim()) || 0;
+        let newSize = currentSize + change;
+        if (newSize < 8) newSize = 8; 
+        if (newSize > 400) newSize = 400; 
+        element.style.setProperty(variableName, newSize + 'px');
+        const displayId = 'disp' + variableName.replace('--', '-');
+        document.getElementById(displayId).innerText = newSize;
+    }
+
+    function adjustPos(containerId, varTop, varLeft, axis, change) {
+        const container = document.getElementById(containerId);
+        const style = getComputedStyle(container);
+        const targetVar = (axis === 'top') ? varTop : varLeft;
+        // Lê o valor atual, garante que é número, fallback para 0
+        let currentValStr = style.getPropertyValue(targetVar).trim();
+        let currentVal = currentValStr ? parseInt(currentValStr) : 0;
+        
+        let newVal = currentVal + change;
+        container.style.setProperty(targetVar, newVal + 'px');
+    }
+
+    function adjustScale(elementId, variableName, change) {
+        const element = document.getElementById(elementId);
+        const style = getComputedStyle(element);
+        let currentScale = parseFloat(style.getPropertyValue(variableName).trim()) || 1.0;
+        let newScale = currentScale + change;
+        if (newScale < 0.5) newScale = 0.5;
+        if (newScale > 3.0) newScale = 3.0;
+        element.style.setProperty(variableName, newScale.toFixed(1));
+        const displayId = 'disp' + variableName.replace('--', '-');
+        document.getElementById(displayId).innerText = Math.round(newScale * 100) + '%';
+    }
+
+    async function download(id, name) { const area=document.getElementById(id); if(area.style.backgroundImage===''){alert("Selecione um fundo na Etapa 1.");return;} const canvas=await html2canvas(area,{scale:3,useCORS:true}); const link=document.createElement('a'); link.download=`${name}.png`; link.href=canvas.toDataURL('image/png'); link.click(); }
+
+    // Inicializa a UI
+    updateWizardUI();
+</script>
+</body>
+</html>
