@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v24 (Integração n8n/API)</title>
+    <title>Cofre de Ofertas v23 (Ocultar Preços Zerados)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* --- ESTILOS GERAIS (Mantidos da v23) --- */
+        /* --- ESTILOS CSS IDÊNTICOS À VERSÃO v22 --- */
         :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --panel-border: #e0e0e0; --step-active: #007bff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .main-container { width: 100%; max-width: 1100px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 30px; box-sizing: border-box; }
@@ -32,17 +32,14 @@
         .nav-buttons { display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
         .btn-nav { padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s; }
         .btn-prev { background: #e0e0e0; color: #555; }
+        .btn-prev:hover { background: #d0d0d0; }
         .btn-next { background: var(--shopee-red); color: white; margin-left: auto; }
+        .btn-next:hover { background: #e60000; }
         .btn-disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* --- ESTILOS DA ÁREA DE API (ETAPA 2) --- */
-        .link-extraction-group { display: flex; gap: 10px; margin-bottom: 5px; }
-        .btn-extract-api { background: var(--shopee-red); color: white; border: none; border-radius: 8px; padding: 0 25px; font-weight: bold; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 8px;}
-        .btn-extract-api:hover { background: #d60000; }
-        .btn-extract-api:disabled { background: #ccc; cursor: not-allowed; }
-        #api-status-message { font-size: 0.85rem; margin-top: 8px; font-weight: bold; min-height: 1.2em; }
-
-        /* --- PREVIEWS E CONTROLES (Mantidos v23) --- */
+        .link-extraction-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-extract { background: #333; color: white; border: none; border-radius: 8px; padding: 0 20px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .btn-extract:hover { background: #555; }
+        .link-helper { font-size: 0.8rem; color: #888; margin-top: 5px; background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107; }
         .final-step-container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
         .preview-wrapper { display: flex; gap: 15px; align-items: flex-start; }
         @media (max-width: 800px) { .preview-wrapper { flex-wrap: wrap; justify-content: center; } }
@@ -67,7 +64,7 @@
         .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
         .promo-button { background: var(--shopee-red); color: white; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap; padding: 0.4em 1em; }
         
-        /* FEED & STORY VARS (Mantidos v23) */
+        /* FEED SPECIFIC - Variáveis iniciais */
         #feed-design { width: 360px; height: 450px; --f-desc-size: 12px; --f-old-size: 13px; --f-btn-size: 18px; --f-img-scale: 1; --f-img-top: 0px; --f-img-left: 0px; --f-desc-top: 0px; --f-desc-left: 0px; --f-old-top: 0px; --f-old-left: 0px; --f-btn-top: 0px; --f-btn-left: 0px; }
         #feed-design .content-area { top: 125px; width: 290px; height: 290px; }
         #feed-design .image-wrapper { height: 170px; top: var(--f-img-top); left: var(--f-img-left); }
@@ -76,6 +73,8 @@
         #feed-design .price-container { padding-bottom: 10px; }
         #feed-design .price-old { font-size: var(--f-old-size); top: var(--f-old-top); left: var(--f-old-left); }
         #feed-design .promo-button { font-size: var(--f-btn-size); top: var(--f-btn-top); left: var(--f-btn-left); }
+
+        /* STORY SPECIFIC - Variáveis iniciais */
         #story-design { width: 324px; height: 576px; --s-desc-size: 14px; --s-old-size: 15px; --s-btn-size: 20px; --s-img-scale: 1; --s-img-top: 0px; --s-img-left: 0px; --s-desc-top: -20px; --s-desc-left: 0px; --s-old-top: 0px; --s-old-left: 0px; --s-btn-top: 0px; --s-btn-left: 0px; }
         #story-design .content-area { top: 155px; width: 280px; height: 360px; }
         #story-design .image-wrapper { height: 185px; margin-bottom: 10px; top: var(--s-img-top); left: var(--s-img-left); }
@@ -88,6 +87,7 @@
         .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
         .download-btn:hover { background: #219653; }
         .btn-story { background: #8e44ad; }
+        .btn-story:hover { background: #732d91; }
     </style>
 </head>
 <body>
@@ -104,23 +104,20 @@
             <h2>Etapa 1: Imagens do Produto e Fundos</h2>
             <div class="upload-container-grid">
                 <div class="styled-upload-box" onclick="document.getElementById('file-feed').click()">
-                    <img id="thumb-feed" class="upload-thumbnail" src="">
-                    <i id="icon-feed" class="upload-icon">🖼️</i>
+                    <img id="thumb-feed" class="upload-thumbnail" src=""> <i id="icon-feed" class="upload-icon">🖼️</i>
                     <label style="cursor: pointer;">Fundo do Feed (4:5)</label>
                     <input id="file-feed" type="file" hidden accept="image/*" onchange="handleFileSelect(event, 'feed', 'status-feed')">
                     <span id="status-feed" class="file-status">Imagem selecionada!</span>
                 </div>
                 <div class="styled-upload-box" onclick="document.getElementById('file-story').click()">
-                    <img id="thumb-story" class="upload-thumbnail" src="">
-                    <i id="icon-story" class="upload-icon">📱</i>
+                    <img id="thumb-story" class="upload-thumbnail" src=""> <i id="icon-story" class="upload-icon">📱</i>
                     <label style="cursor: pointer;">Fundo do Story (9:16)</label>
                     <input id="file-story" type="file" hidden accept="image/*" onchange="handleFileSelect(event, 'story', 'status-story')">
                     <span id="status-story" class="file-status">Imagem selecionada!</span>
                 </div>
                  <div class="styled-upload-box" onclick="document.getElementById('inputImg').click()" style="border-color: var(--shopee-red); background: #fff5f5;">
-                    <img id="thumb-prod" class="upload-thumbnail" src="">
-                    <i id="icon-prod" class="upload-icon" style="color: var(--shopee-red);">📸</i>
-                    <label style="cursor: pointer; color: var(--shopee-red);">Imagem do Produto</label>
+                    <img id="thumb-prod" class="upload-thumbnail" src=""> <i id="icon-prod" class="upload-icon" style="color: var(--shopee-red);">📸</i>
+                    <label style="cursor: pointer; color: var(--shopee-red);">Imagem do Produto (PNG)</label>
                     <input type="file" id="inputImg" hidden accept="image/*" onchange="handleProductImg(event)">
                     <span id="status-prod" class="file-status" style="color: var(--shopee-red);">Imagem selecionada!</span>
                 </div>
@@ -128,20 +125,18 @@
         </div>
 
         <div class="step-content" data-step="2">
-            <h2>Etapa 2: Dados do Produto (Via API)</h2>
+            <h2>Etapa 2: Título do Produto</h2>
             <div class="form-group">
                 <label for="step2Link">Link do Produto (Shopee, Magalu, ML, Amazon)</label>
                 <div class="link-extraction-group">
-                    <input type="text" id="step2Link" placeholder="Cole o link aqui...">
-                    <button id="btn-api-call" class="btn-extract-api" onclick="fetchDataFromN8N()">
-                        <span>🚀</span> Consultar API Oficial
-                    </button>
+                    <input type="text" id="step2Link" placeholder="Cole o link aqui (Ex: https://www.magazinevoce.com.br/...)">
+                    <button class="btn-extract" onclick="attemptTitleExtraction()">Tentar Extrair</button>
                 </div>
-                <div id="api-status-message"></div>
+                <p class="link-helper">⚠️ Links curtos (amzn.to, s.shopee, mercadolivre.com/sec) NÃO contêm o nome do produto. Para estes, digite o título manualmente abaixo.</p>
             </div>
             <div class="form-group">
-                <label for="step2Title">Título/Descrição (Preenchido pela API ou Manual)</label>
-                <textarea id="step2Title" rows="4" placeholder="O título aparecerá aqui..."></textarea>
+                <label for="step2Title">Título/Descrição do Produto (Verifique ou Digite)</label>
+                <textarea id="step2Title" rows="4" placeholder="O título aparecerá aqui ou digite manualmente..."></textarea>
             </div>
         </div>
 
@@ -221,106 +216,168 @@
     </div>
 
 <script>
-    // ==================================================================
-    // CONFIGURAÇÃO DO N8N - COLE SUA URL ABAIXO
-    // ==================================================================
-    const N8N_WEBHOOK_URL = "http://host.docker.internal:5678/webhook-test/shopee-data"; 
-    // Exemplo: "https://seu-n8n.com/webhook/shopee-data"
-    // ==================================================================
+    // --- ESTADO GLOBAL DA APLICAÇÃO (A Fonte da Verdade para os Controles) ---
+    // Isso corrige definitivamente o problema dos botões em elementos ocultos.
+    let appState = {
+        feed: {
+            imgTop: 0, imgLeft: 0, imgScale: 1.0,
+            descTop: 0, descLeft: 0, descSize: 12,
+            oldTop: 0, oldLeft: 0, oldSize: 13,
+            btnTop: 0, btnLeft: 0, btnSize: 18
+        },
+        story: {
+            imgTop: 0, imgLeft: 0, imgScale: 1.0,
+            descTop: -20, descLeft: 0, descSize: 14,
+            oldTop: 0, oldLeft: 0, oldSize: 15,
+            btnTop: 0, btnLeft: 0, btnSize: 20
+        }
+    };
 
-
-    // ESTADO GLOBAL (Mantido da v23 para os controles funcionarem)
-    let appState = { feed: { imgTop: 0, imgLeft: 0, imgScale: 1.0, descTop: 0, descLeft: 0, descSize: 12, oldTop: 0, oldLeft: 0, oldSize: 13, btnTop: 0, btnLeft: 0, btnSize: 18 }, story: { imgTop: 0, imgLeft: 0, imgScale: 1.0, descTop: -20, descLeft: 0, descSize: 14, oldTop: 0, oldLeft: 0, oldSize: 15, btnTop: 0, btnLeft: 0, btnSize: 20 } };
-    let currentStep = 1; const totalSteps = 4;
+    let currentStep = 1;
+    const totalSteps = 4;
 
     // --- LÓGICA DO WIZARD ---
     function changeStep(direction) {
-        const newStep = currentStep + direction; if (newStep < 1 || newStep > totalSteps) return;
-        if (direction === 1 && currentStep === 2 && !document.getElementById('step2Title').value.trim()) { alert("Por favor, informe um título para o produto."); return; }
-        currentStep = newStep; updateWizardUI(); if (currentStep === 4) { updateFinalPreviews(); }
+        const newStep = currentStep + direction;
+        if (newStep < 1 || newStep > totalSteps) return;
+        if (direction === 1 && currentStep === 2 && !document.getElementById('step2Title').value.trim()) {
+            alert("Por favor, informe um título para o produto."); return;
+        }
+        currentStep = newStep;
+        updateWizardUI();
+        if (currentStep === 4) { updateFinalPreviews(); }
     }
+
     function updateWizardUI() {
-        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active-step')); document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active-step');
-        for (let i = 1; i <= totalSteps; i++) { const indicator = document.getElementById(`indicator${i}`); indicator.classList.remove('active', 'completed'); if (i < currentStep) indicator.classList.add('completed'); if (i === currentStep) indicator.classList.add('active'); }
-        document.getElementById('btnPrev').disabled = currentStep === 1; document.getElementById('btnNext').textContent = currentStep === totalSteps ? "Concluir" : "Continuar"; if(currentStep === totalSteps) document.getElementById('btnNext').style.display = 'none'; else document.getElementById('btnNext').style.display = 'block';
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active-step'));
+        document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active-step');
+        for (let i = 1; i <= totalSteps; i++) {
+            const indicator = document.getElementById(`indicator${i}`);
+            indicator.classList.remove('active', 'completed');
+            if (i < currentStep) indicator.classList.add('completed');
+            if (i === currentStep) indicator.classList.add('active');
+        }
+        document.getElementById('btnPrev').disabled = currentStep === 1;
+        document.getElementById('btnNext').textContent = currentStep === totalSteps ? "Concluir" : "Continuar";
+        if(currentStep === totalSteps) document.getElementById('btnNext').style.display = 'none'; else document.getElementById('btnNext').style.display = 'block';
     }
 
-    // --- FUNÇÕES DE UPLOAD ---
-    function handleFileSelect(event, type, statusId) { const file = event.target.files[0]; if (file) { const bgUrl = URL.createObjectURL(file); document.getElementById(type === 'feed' ? 'feed-design' : 'story-design').style.backgroundImage = `url(${bgUrl})`; document.getElementById('thumb-' + type).src = bgUrl; document.getElementById('thumb-' + type).style.display = 'block'; document.getElementById('icon-' + type).style.display = 'none'; document.getElementById(statusId).style.display = 'block'; } }
-    function handleProductImg(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = function(e) { updateProductImageDisplays(e.target.result); }; reader.readAsDataURL(file); } }
-    // Função auxiliar para atualizar todas as views da imagem do produto
-    function updateProductImageDisplays(imageUrl) {
-        document.getElementById('viewImgFeed').src = imageUrl; document.getElementById('viewImgStory').src = imageUrl;
-        document.getElementById('thumb-prod').src = imageUrl; document.getElementById('thumb-prod').style.display = 'block'; document.getElementById('icon-prod').style.display = 'none';
-        document.getElementById('status-prod').style.display = 'block';
-    }
-
-
-    // --- NOVA FUNÇÃO: CHAMADA API N8N (ETAPA 2) ---
-    async function fetchDataFromN8N() {
-        const url = document.getElementById('step2Link').value.trim();
-        const statusMsg = document.getElementById('api-status-message');
-        const btnApi = document.getElementById('btn-api-call');
-
-        if (!url) { alert("Cole um link primeiro."); return; }
-        if (N8N_WEBHOOK_URL.includes("COLE_SUA_URL")) { alert("Configure a URL do seu n8n no código HTML antes de usar."); return; }
-
-        // Estado de carregamento
-        statusMsg.innerText = "⏳ Consultando API via n8n..."; statusMsg.style.color = "#666";
-        btnApi.disabled = true; btnApi.style.opacity = "0.7";
-
-        try {
-            const response = await fetch(N8N_WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ link: url }) // Envia o link para o n8n
-            });
-
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-            const data = await response.json();
-
-            if (data.success) {
-                // Sucesso! Preenche os campos
-                statusMsg.innerText = "✅ Dados recebidos com sucesso!"; statusMsg.style.color = "var(--success-green)";
-                
-                if(data.data.title) document.getElementById('step2Title').value = data.data.title.toUpperCase();
-                if(data.data.priceOld) document.getElementById('step3OldPrice').value = data.data.priceOld;
-                if(data.data.pricePromo) document.getElementById('step3PromoPrice').value = data.data.pricePromo;
-                
-                // Se vier imagem da API, carrega ela!
-                if(data.data.imageUrl && data.data.imageUrl.startsWith('http')) {
-                    updateProductImageDisplays(data.data.imageUrl);
-                    // Volta para a etapa 1 visualmente para mostrar que a imagem carregou
-                    statusMsg.innerText += " (Imagem carregada na Etapa 1)";
-                }
-
-            } else {
-                throw new Error(data.error || "O n8n retornou um erro.");
-            }
-
-        } catch (error) {
-            console.error(error);
-            statusMsg.innerText = "❌ Erro: " + error.message; statusMsg.style.color = "var(--shopee-red)";
-        } finally {
-            btnApi.disabled = false; btnApi.style.opacity = "1";
+    // --- FUNÇÕES DE UPLOAD E DADOS ---
+    function handleFileSelect(event, type, statusId) {
+        const file = event.target.files[0];
+        if (file) {
+            const bgUrl = URL.createObjectURL(file);
+            document.getElementById(type === 'feed' ? 'feed-design' : 'story-design').style.backgroundImage = `url(${bgUrl})`;
+            document.getElementById('thumb-' + type).src = bgUrl; document.getElementById('thumb-' + type).style.display = 'block'; document.getElementById('icon-' + type).style.display = 'none';
+            document.getElementById(statusId).style.display = 'block';
         }
     }
-
-    // --- FUNÇÕES AUXILIARES (Preço, Ocultar) ---
+    function handleProductImg(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('viewImgFeed').src = e.target.result; document.getElementById('viewImgStory').src = e.target.result;
+                document.getElementById('thumb-prod').src = e.target.result; document.getElementById('thumb-prod').style.display = 'block'; document.getElementById('icon-prod').style.display = 'none';
+                document.getElementById('status-prod').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    function attemptTitleExtraction() {
+        const url = document.getElementById('step2Link').value.trim(); const titleArea = document.getElementById('step2Title');
+        if (!url) { alert("Cole um link primeiro."); return; }
+        let extractedTitle = "";
+        if (url.includes('magazinevoce') || url.includes('magazineluiza')) { try { const matches = url.match(/\.com\.br\/.*?\/(.*?)\/p\//i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){} } 
+        else if (url.includes('shopee.com.br') && url.includes('-i.')) { try { const matches = url.match(/shopee\.com\.br\/(.*?)(?:-i\.|\?|$)/i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){} }
+        if (url.match(/(s\.shopee|amzn\.to|mercadolivre\.com\/sec|bit\.ly)/i) && !extractedTitle) { alert("Links encurtados não contêm o nome do produto na URL. Digite manualmente."); titleArea.value = ""; titleArea.focus(); return; }
+        if (extractedTitle && extractedTitle.length > 3) { titleArea.value = extractedTitle.toUpperCase(); } else if (!extractedTitle) { alert("Não foi possível extrair o título. Digite manualmente."); titleArea.focus(); }
+    }
     function formatCurrencyInput(input) { let value = input.value.replace(/\D/g, ''); value = (parseInt(value) / 100).toFixed(2) + ''; value = value.replace(".", ","); value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); input.value = "R$ " + value; }
-    function shouldHidePrice(valueStr) { if (!valueStr) return true; const trimmed = valueStr.trim(); if (trimmed === "" || trimmed === "R$ 0,00" || trimmed === "0") return true; return false; }
-    function updateFinalPreviews() {
-        const title = document.getElementById('step2Title').value || "TÍTULO DO PRODUTO";
-        const oldInputVal = document.getElementById('step3OldPrice').value; const promoInputVal = document.getElementById('step3PromoPrice').value;
-        document.getElementById('viewDescFeed').innerText = title; document.getElementById('viewDescStory').innerText = title;
-        const hideOld = shouldHidePrice(oldInputVal); const oldDisplay = hideOld ? 'none' : 'block';
-        const viewOldFeed = document.getElementById('viewOldFeed'); const viewOldStory = document.getElementById('viewOldStory'); viewOldFeed.innerText = oldInputVal || ""; viewOldFeed.style.display = oldDisplay; viewOldStory.innerText = oldInputVal || ""; viewOldStory.style.display = oldDisplay;
-        const hidePromo = shouldHidePrice(promoInputVal); const promoDisplay = hidePromo ? 'none' : 'inline-flex';
-        const viewPromoFeed = document.getElementById('viewPromoFeed'); const viewPromoStory = document.getElementById('viewPromoStory'); viewPromoFeed.innerText = promoInputVal || "VALOR"; viewPromoFeed.style.display = promoDisplay; viewPromoStory.innerText = promoInputVal || "VALOR"; viewPromoStory.style.display = promoDisplay;
+
+    // --- NOVA FUNÇÃO PARA OCULTAR PREÇO ZERADO (v23) ---
+    function shouldHidePrice(valueStr) {
+        if (!valueStr) return true;
+        const trimmed = valueStr.trim();
+        if (trimmed === "" || trimmed === "R$ 0,00") return true;
+        return false;
     }
 
-    // --- FUNÇÕES DE CONTROLE (ESTADO GLOBAL v22) ---
-    function adjustPos(t,e,a,o){const n=e+(a==="top"?"Top":"Left"),d=t+"-design",s="--"+t.charAt(0)+"-"+e+"-"+a;appState[t][n]+=o,document.getElementById(d).style.setProperty(s,appState[t][n]+"px")}function adjustValue(t,e,a){const o=e+"Size",n=t+"-design",d="--"+t.charAt(0)+"-"+e+"-size",s="disp-"+t.charAt(0)+"-"+e+"-size";let r=appState[t][o]+a;r<8&&(r=8),r>400&&(r=400),appState[t][o]=r,document.getElementById(n).style.setProperty(d,r+"px"),document.getElementById(s).innerText=r}function adjustScale(t,e){const a="imgScale",o=t+"-design",n="--"+t.charAt(0)+"-img-scale",d="disp-"+t.charAt(0)+"-img-scale";let s=appState[t][a]+e;s<.5&&(s=.5),s>3&&(s=3),appState[t][a]=s,document.getElementById(o).style.setProperty(n,s.toFixed(1)),document.getElementById(d).innerText=Math.round(100*s)+"%"}async function download(t,e){const a=document.getElementById(t);if(a.style.backgroundImage==="")return alert("Selecione um fundo na Etapa 1."),void 0;const o=await html2canvas(a,{scale:3,useCORS:!0}),n=document.createElement("a");n.download=`${e}.png`,n.href=o.toDataURL("image/png"),n.click()}
+    // --- FUNÇÃO DE ATUALIZAÇÃO FINAL (COM LÓGICA DE OCULTAR) ---
+    function updateFinalPreviews() {
+        const title = document.getElementById('step2Title').value || "TÍTULO DO PRODUTO";
+        const oldInputVal = document.getElementById('step3OldPrice').value;
+        const promoInputVal = document.getElementById('step3PromoPrice').value;
+
+        // Atualiza Títulos
+        document.getElementById('viewDescFeed').innerText = title;
+        document.getElementById('viewDescStory').innerText = title;
+
+        // Atualiza Preço Antigo (com lógica de ocultar)
+        const hideOld = shouldHidePrice(oldInputVal);
+        const oldDisplay = hideOld ? 'none' : 'block';
+        const viewOldFeed = document.getElementById('viewOldFeed'); const viewOldStory = document.getElementById('viewOldStory');
+        viewOldFeed.innerText = oldInputVal || ""; viewOldFeed.style.display = oldDisplay;
+        viewOldStory.innerText = oldInputVal || ""; viewOldStory.style.display = oldDisplay;
+
+        // Atualiza Preço Promo (com lógica de ocultar)
+        const hidePromo = shouldHidePrice(promoInputVal);
+        // Nota: o botão promo usa 'inline-flex' no CSS original, então restauramos para isso
+        const promoDisplay = hidePromo ? 'none' : 'inline-flex';
+        const viewPromoFeed = document.getElementById('viewPromoFeed'); const viewPromoStory = document.getElementById('viewPromoStory');
+        viewPromoFeed.innerText = promoInputVal || "VALOR"; viewPromoFeed.style.display = promoDisplay;
+        viewPromoStory.innerText = promoInputVal || "VALOR"; viewPromoStory.style.display = promoDisplay;
+    }
+
+
+    // --- NOVAS FUNÇÕES DE CONTROLE (BASEADAS NO ESTADO GLOBAL - INFALÍVEIS) ---
+    function adjustPos(type, target, axis, change) {
+        // type: 'feed'/'story', target: 'img'/'desc'/'old'/'btn', axis: 'top'/'left'
+        const stateKey = target + (axis === 'top' ? 'Top' : 'Left'); // ex: imgTop
+        const containerId = type + '-design';
+        const cssVar = '--' + type.charAt(0) + '-' + target + '-' + axis; // ex: --f-img-top
+
+        // 1. Atualiza o estado
+        appState[type][stateKey] += change;
+
+        // 2. Aplica a mudança no DOM
+        document.getElementById(containerId).style.setProperty(cssVar, appState[type][stateKey] + 'px');
+    }
+
+    function adjustValue(type, target, change) {
+        // target: 'desc'/'old'/'btn'
+        const stateKey = target + 'Size'; // ex: descSize
+        const containerId = type + '-design';
+        const cssVar = '--' + type.charAt(0) + '-' + target + '-size'; // ex: --f-desc-size
+        const displayId = 'disp-' + type.charAt(0) + '-' + target + '-size'; // ex: disp-f-desc-size
+
+        // 1. Atualiza o estado com limites
+        let newSize = appState[type][stateKey] + change;
+        if (newSize < 8) newSize = 8; if (newSize > 400) newSize = 400;
+        appState[type][stateKey] = newSize;
+
+        // 2. Aplica no DOM e atualiza o display numérico
+        document.getElementById(containerId).style.setProperty(cssVar, newSize + 'px');
+        document.getElementById(displayId).innerText = newSize;
+    }
+
+    function adjustScale(type, change) {
+        const stateKey = 'imgScale';
+        const containerId = type + '-design';
+        const cssVar = '--' + type.charAt(0) + '-img-scale';
+        const displayId = 'disp-' + type.charAt(0) + '-img-scale';
+
+        // 1. Atualiza o estado com limites
+        let newScale = appState[type][stateKey] + change;
+        if (newScale < 0.5) newScale = 0.5; if (newScale > 3.0) newScale = 3.0;
+        appState[type][stateKey] = newScale;
+
+        // 2. Aplica no DOM
+        document.getElementById(containerId).style.setProperty(cssVar, newScale.toFixed(1));
+        document.getElementById(displayId).innerText = Math.round(newScale * 100) + '%';
+    }
+
+    async function download(id, name) { const area=document.getElementById(id); if(area.style.backgroundImage===''){alert("Selecione um fundo na Etapa 1.");return;} const canvas=await html2canvas(area,{scale:3,useCORS:true}); const link=document.createElement('a'); link.download=`${name}.png`; link.href=canvas.toDataURL('image/png'); link.click(); }
 
     updateWizardUI();
 </script>
