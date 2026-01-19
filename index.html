@@ -3,43 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v19 (Wizard com Miniaturas)</title>
+    <title>Cofre de Ofertas v23 (Ocultar Preços Zerados)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* --- ESTILOS CSS IDÊNTICOS À VERSÃO v22 --- */
         :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --panel-border: #e0e0e0; --step-active: #007bff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        /* --- STEP WIZARD CONTAINER --- */
         .main-container { width: 100%; max-width: 1100px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 30px; box-sizing: border-box; }
-        
-        /* Step Indicators */
         .step-indicator-container { display: flex; justify-content: space-between; margin-bottom: 30px; position: relative; }
         .step-indicator-container::before { content: ''; position: absolute; top: 15px; left: 0; width: 100%; height: 3px; background: #eee; z-index: 0; }
         .step-indicator { position: relative; z-index: 1; background: #eee; color: #999; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.3s; }
         .step-indicator.active { background: var(--shopee-red); color: white; box-shadow: 0 0 0 4px rgba(255, 45, 45, 0.2); }
         .step-indicator.completed { background: var(--success-green); color: white; }
-
-        /* Step Content */
         .step-content { display: none; animation: fadeIn 0.4s ease-in-out; }
         .step-content.active-step { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         h2 { color: #333; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 25px; }
         .form-group { margin-bottom: 20px; }
         label { font-weight: bold; font-size: 0.9rem; color: #555; display: block; margin-bottom: 8px; }
         input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.3s; }
         input:focus, textarea:focus { border-color: var(--shopee-red); outline: none; }
-
-        /* Upload Box Stylish (Com Miniaturas) */
         .upload-container-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         .styled-upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; background: #fafafa; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
         .styled-upload-box:hover { background: #f0f0f0; border-color: var(--shopee-red); }
         .upload-icon { font-size: 2rem; color: #999; margin-bottom: 10px; }
-        /* Estilo da Miniatura */
-        .upload-thumbnail { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none; /* Escondido por padrão */ }
+        .upload-thumbnail { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none; }
         .file-status { font-size: 0.8rem; color: var(--success-green); margin-top: 5px; font-weight: bold; display: none; }
-
-        /* Navigation Buttons */
         .nav-buttons { display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
         .btn-nav { padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s; }
         .btn-prev { background: #e0e0e0; color: #555; }
@@ -47,20 +36,14 @@
         .btn-next { background: var(--shopee-red); color: white; margin-left: auto; }
         .btn-next:hover { background: #e60000; }
         .btn-disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* --- ETAPA 2: LINK EXTRACTION --- */
         .link-extraction-group { display: flex; gap: 10px; margin-bottom: 15px; }
         .btn-extract { background: #333; color: white; border: none; border-radius: 8px; padding: 0 20px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .btn-extract:hover { background: #555; }
         .link-helper { font-size: 0.8rem; color: #888; margin-top: 5px; background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107; }
-
-        /* --- ETAPA 4: PREVIEWS (Layout v17 adaptado) --- */
         .final-step-container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
         .preview-wrapper { display: flex; gap: 15px; align-items: flex-start; }
         @media (max-width: 800px) { .preview-wrapper { flex-wrap: wrap; justify-content: center; } }
         .canvas-column { display: flex; flex-direction: column; align-items: center; }
-        
-        /* --- CONTROL PANEL STYLES (v17) --- */
         .control-panel { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-width: 165px; overflow: hidden; border: 1px solid var(--panel-border); }
         .panel-header { background: #f9f9f9; padding: 10px; text-align: center; font-weight: 800; color: #555; font-size: 0.85rem; border-bottom: 1px solid var(--panel-border); text-transform: uppercase; }
         .unified-group { padding: 12px 10px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 6px; }
@@ -72,8 +55,6 @@
         .btn-size, .btn-move { width: 26px; height: 26px; border: 1px solid #ddd; background: white; color: #333; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-size:hover, .btn-move:hover { background: #eee; }
         .size-display { font-size: 0.8rem; font-weight: bold; color: #555; }
-        
-        /* --- CANVAS STYLES (v17) --- */
         .design-canvas { background-color: #ddd; background-size: 100% 100%; background-repeat: no-repeat; position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
         .content-area { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
         .image-wrapper { width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; overflow: hidden; }
@@ -83,7 +64,7 @@
         .price-old { color: var(--shopee-red); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
         .promo-button { background: var(--shopee-red); color: white; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap; padding: 0.4em 1em; }
         
-        /* FEED SPECIFIC */
+        /* FEED SPECIFIC - Variáveis iniciais */
         #feed-design { width: 360px; height: 450px; --f-desc-size: 12px; --f-old-size: 13px; --f-btn-size: 18px; --f-img-scale: 1; --f-img-top: 0px; --f-img-left: 0px; --f-desc-top: 0px; --f-desc-left: 0px; --f-old-top: 0px; --f-old-left: 0px; --f-btn-top: 0px; --f-btn-left: 0px; }
         #feed-design .content-area { top: 125px; width: 290px; height: 290px; }
         #feed-design .image-wrapper { height: 170px; top: var(--f-img-top); left: var(--f-img-left); }
@@ -93,7 +74,7 @@
         #feed-design .price-old { font-size: var(--f-old-size); top: var(--f-old-top); left: var(--f-old-left); }
         #feed-design .promo-button { font-size: var(--f-btn-size); top: var(--f-btn-top); left: var(--f-btn-left); }
 
-        /* STORY SPECIFIC */
+        /* STORY SPECIFIC - Variáveis iniciais */
         #story-design { width: 324px; height: 576px; --s-desc-size: 14px; --s-old-size: 15px; --s-btn-size: 20px; --s-img-scale: 1; --s-img-top: 0px; --s-img-left: 0px; --s-desc-top: -20px; --s-desc-left: 0px; --s-old-top: 0px; --s-old-left: 0px; --s-btn-top: 0px; --s-btn-left: 0px; }
         #story-design .content-area { top: 155px; width: 280px; height: 360px; }
         #story-design .image-wrapper { height: 185px; margin-bottom: 10px; top: var(--s-img-top); left: var(--s-img-left); }
@@ -165,10 +146,12 @@
                 <div class="form-group" style="flex: 1;">
                     <label for="step3OldPrice">Preço Antigo (De:)</label>
                     <input type="text" id="step3OldPrice" placeholder="R$ 0,00" oninput="formatCurrencyInput(this)">
+                    <small style="color: #888;">Deixe em branco ou digite 0 para ocultar.</small>
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label for="step3PromoPrice" style="color: var(--shopee-red);">Preço Promocional (Por:)</label>
                     <input type="text" id="step3PromoPrice" placeholder="R$ 0,00" style="border-color: var(--shopee-red); font-weight: bold;" oninput="formatCurrencyInput(this)">
+                    <small style="color: #888;">Deixe em branco ou digite 0 para ocultar.</small>
                 </div>
             </div>
         </div>
@@ -194,9 +177,9 @@
                     </div>
                     <div class="control-panel">
                         <div class="panel-header">Ajustes Feed</div>
-                         <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-img-top', '--f-img-left', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('feed-design', '--f-img-scale', -0.1)">-</button><span id="disp-f-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('feed-design', '--f-img-scale', 0.1)">+</button></div></div>
-                        <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed-design', '--f-desc-size', -1)">-</button><span id="disp-f-desc-size" class="size-display">12</span><button class="btn-size" onclick="adjustValue('feed-design', '--f-desc-size', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-desc-top', '--f-desc-left', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label special-label">Botão (Box/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed-design', '--f-btn-size', -1)">-</button><span id="disp-f-btn-size" class="size-display">18</span><button class="btn-size" onclick="adjustValue('feed-design', '--f-btn-size', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed-design', '--f-btn-top', '--f-btn-left', 'left', 2)">➡️</button></div></div>
+                         <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'img', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('feed', -0.1)">-</button><span id="disp-f-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('feed', 0.1)">+</button></div></div>
+                        <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'desc', -1)">-</button><span id="disp-f-desc-size" class="size-display">12</span><button class="btn-size" onclick="adjustValue('feed', 'desc', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'desc', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'left', 2)">➡️</button></div></div>
+                        <div class="unified-group"><span class="control-label special-label">Botão (Box/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'btn', -1)">-</button><span id="disp-f-btn-size" class="size-display">18</span><button class="btn-size" onclick="adjustValue('feed', 'btn', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'btn', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'btn', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'btn', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'btn', 'left', 2)">➡️</button></div></div>
                     </div>
                 </div>
 
@@ -217,10 +200,10 @@
                     </div>
                     <div class="control-panel" style="border-color: #8e44ad;">
                         <div class="panel-header" style="background: #f4eafc; color: #8e44ad;">Ajustes Story</div>
-                        <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-img-top', '--s-img-left', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('story-design', '--s-img-scale', -0.1)">-</button><span id="disp-s-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('story-design', '--s-img-scale', 0.1)">+</button></div></div>
-                        <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story-design', '--s-desc-size', -1)">-</button><span id="disp-s-desc-size" class="size-display">14</span><button class="btn-size" onclick="adjustValue('story-design', '--s-desc-size', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-desc-top', '--s-desc-left', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label">Preço Antigo</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story-design', '--s-old-size', -1)">-</button><span id="disp-s-old-size" class="size-display">15</span><button class="btn-size" onclick="adjustValue('story-design', '--s-old-size', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-old-top', '--s-old-left', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label special-label">Botão (Box/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story-design', '--s-btn-size', -1)">-</button><span id="disp-s-btn-size" class="size-display">20</span><button class="btn-size" onclick="adjustValue('story-design', '--s-btn-size', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story-design', '--s-btn-top', '--s-btn-left', 'left', 2)">➡️</button></div></div>
+                        <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'img', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('story', -0.1)">-</button><span id="disp-s-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('story', 0.1)">+</button></div></div>
+                        <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'desc', -1)">-</button><span id="disp-s-desc-size" class="size-display">14</span><button class="btn-size" onclick="adjustValue('story', 'desc', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'desc', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'left', 2)">➡️</button></div></div>
+                        <div class="unified-group"><span class="control-label">Preço Antigo</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'old', -1)">-</button><span id="disp-s-old-size" class="size-display">15</span><button class="btn-size" onclick="adjustValue('story', 'old', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'old', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'old', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'old', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'old', 'left', 2)">➡️</button></div></div>
+                        <div class="unified-group"><span class="control-label special-label">Botão (Box/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'btn', -1)">-</button><span id="disp-s-btn-size" class="size-display">20</span><button class="btn-size" onclick="adjustValue('story', 'btn', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'btn', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'btn', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'btn', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'btn', 'left', 2)">➡️</button></div></div>
                     </div>
                 </div>
             </div>
@@ -233,62 +216,59 @@
     </div>
 
 <script>
+    // --- ESTADO GLOBAL DA APLICAÇÃO (A Fonte da Verdade para os Controles) ---
+    // Isso corrige definitivamente o problema dos botões em elementos ocultos.
+    let appState = {
+        feed: {
+            imgTop: 0, imgLeft: 0, imgScale: 1.0,
+            descTop: 0, descLeft: 0, descSize: 12,
+            oldTop: 0, oldLeft: 0, oldSize: 13,
+            btnTop: 0, btnLeft: 0, btnSize: 18
+        },
+        story: {
+            imgTop: 0, imgLeft: 0, imgScale: 1.0,
+            descTop: -20, descLeft: 0, descSize: 14,
+            oldTop: 0, oldLeft: 0, oldSize: 15,
+            btnTop: 0, btnLeft: 0, btnSize: 20
+        }
+    };
+
     let currentStep = 1;
     const totalSteps = 4;
 
-    // --- LÓGICA DO WIZARD (ETAPAS) ---
+    // --- LÓGICA DO WIZARD ---
     function changeStep(direction) {
         const newStep = currentStep + direction;
         if (newStep < 1 || newStep > totalSteps) return;
-
-        // Validações
-        if (direction === 1) {
-             if (currentStep === 2 && !document.getElementById('step2Title').value.trim()) {
-                alert("Por favor, informe um título para o produto."); return;
-            }
+        if (direction === 1 && currentStep === 2 && !document.getElementById('step2Title').value.trim()) {
+            alert("Por favor, informe um título para o produto."); return;
         }
-
         currentStep = newStep;
         updateWizardUI();
-
-        if (currentStep === 4) {
-            updateFinalPreviews();
-        }
+        if (currentStep === 4) { updateFinalPreviews(); }
     }
 
     function updateWizardUI() {
         document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active-step'));
         document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active-step');
-
         for (let i = 1; i <= totalSteps; i++) {
             const indicator = document.getElementById(`indicator${i}`);
             indicator.classList.remove('active', 'completed');
             if (i < currentStep) indicator.classList.add('completed');
             if (i === currentStep) indicator.classList.add('active');
         }
-
         document.getElementById('btnPrev').disabled = currentStep === 1;
         document.getElementById('btnNext').textContent = currentStep === totalSteps ? "Concluir" : "Continuar";
         if(currentStep === totalSteps) document.getElementById('btnNext').style.display = 'none'; else document.getElementById('btnNext').style.display = 'block';
     }
 
-
-    // --- ETAPA 1: UPLOAD IMAGENS (ATUALIZADO COM MINIATURAS) ---
+    // --- FUNÇÕES DE UPLOAD E DADOS ---
     function handleFileSelect(event, type, statusId) {
         const file = event.target.files[0];
         if (file) {
             const bgUrl = URL.createObjectURL(file);
-            // 1. Atualiza os canvas finais (invisíveis)
             document.getElementById(type === 'feed' ? 'feed-design' : 'story-design').style.backgroundImage = `url(${bgUrl})`;
-            
-            // 2. Atualiza a miniatura na Etapa 1
-            const thumb = document.getElementById('thumb-' + type);
-            const icon = document.getElementById('icon-' + type);
-            thumb.src = bgUrl;
-            thumb.style.display = 'block';
-            icon.style.display = 'none';
-
-            // 3. Mostra status
+            document.getElementById('thumb-' + type).src = bgUrl; document.getElementById('thumb-' + type).style.display = 'block'; document.getElementById('icon-' + type).style.display = 'none';
             document.getElementById(statusId).style.display = 'block';
         }
     }
@@ -297,122 +277,108 @@
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                // 1. Atualiza as imagens finais (invisíveis)
-                document.getElementById('viewImgFeed').src = e.target.result;
-                document.getElementById('viewImgStory').src = e.target.result;
-
-                // 2. Atualiza a miniatura na Etapa 1
-                const thumb = document.getElementById('thumb-prod');
-                const icon = document.getElementById('icon-prod');
-                thumb.src = e.target.result;
-                thumb.style.display = 'block';
-                icon.style.display = 'none';
-
-                // 3. Mostra status
+                document.getElementById('viewImgFeed').src = e.target.result; document.getElementById('viewImgStory').src = e.target.result;
+                document.getElementById('thumb-prod').src = e.target.result; document.getElementById('thumb-prod').style.display = 'block'; document.getElementById('icon-prod').style.display = 'none';
                 document.getElementById('status-prod').style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
     }
-
-
-    // --- ETAPA 2: EXTRAÇÃO DE TÍTULO ---
     function attemptTitleExtraction() {
-        const url = document.getElementById('step2Link').value.trim();
-        const titleArea = document.getElementById('step2Title');
+        const url = document.getElementById('step2Link').value.trim(); const titleArea = document.getElementById('step2Title');
         if (!url) { alert("Cole um link primeiro."); return; }
-
         let extractedTitle = "";
-        // Magalu (Link Longo)
-        if (url.includes('magazinevoce') || url.includes('magazineluiza')) {
-             try { const matches = url.match(/\.com\.br\/.*?\/(.*?)\/p\//i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){}
-        } 
-        // Shopee (Link Longo Antigo)
-        else if (url.includes('shopee.com.br') && url.includes('-i.')) {
-             try { const matches = url.match(/shopee\.com\.br\/(.*?)(?:-i\.|\?|$)/i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){}
-        }
+        if (url.includes('magazinevoce') || url.includes('magazineluiza')) { try { const matches = url.match(/\.com\.br\/.*?\/(.*?)\/p\//i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){} } 
+        else if (url.includes('shopee.com.br') && url.includes('-i.')) { try { const matches = url.match(/shopee\.com\.br\/(.*?)(?:-i\.|\?|$)/i); if (matches && matches[1]) extractedTitle = decodeURIComponent(matches[1]).replace(/-/g, ' '); } catch(e){} }
+        if (url.match(/(s\.shopee|amzn\.to|mercadolivre\.com\/sec|bit\.ly)/i) && !extractedTitle) { alert("Links encurtados não contêm o nome do produto na URL. Digite manualmente."); titleArea.value = ""; titleArea.focus(); return; }
+        if (extractedTitle && extractedTitle.length > 3) { titleArea.value = extractedTitle.toUpperCase(); } else if (!extractedTitle) { alert("Não foi possível extrair o título. Digite manualmente."); titleArea.focus(); }
+    }
+    function formatCurrencyInput(input) { let value = input.value.replace(/\D/g, ''); value = (parseInt(value) / 100).toFixed(2) + ''; value = value.replace(".", ","); value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); input.value = "R$ " + value; }
 
-        // Links curtos (Aviso de segurança do navegador)
-        if (url.match(/(s\.shopee|amzn\.to|mercadolivre\.com\/sec|bit\.ly)/i) && !extractedTitle) {
-             alert("Links encurtados não contêm o nome do produto na URL. Por segurança, o navegador não pode acessá-los. Por favor, digite o título manualmente.");
-             titleArea.value = ""; titleArea.focus(); return;
-        }
-
-        if (extractedTitle && extractedTitle.length > 3) {
-            titleArea.value = extractedTitle.toUpperCase();
-        } else if (!extractedTitle) {
-            alert("Não foi possível extrair o título deste link. Por favor, digite manualmente.");
-            titleArea.focus();
-        }
+    // --- NOVA FUNÇÃO PARA OCULTAR PREÇO ZERADO (v23) ---
+    function shouldHidePrice(valueStr) {
+        if (!valueStr) return true;
+        const trimmed = valueStr.trim();
+        if (trimmed === "" || trimmed === "R$ 0,00") return true;
+        return false;
     }
 
-
-    // --- ETAPA 3: MÁSCARA DE MOEDA ---
-    function formatCurrencyInput(input) {
-        let value = input.value.replace(/\D/g, '');
-        value = (parseInt(value) / 100).toFixed(2) + '';
-        value = value.replace(".", ",");
-        value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-        input.value = "R$ " + value;
-    }
-
-    // --- ETAPA 4: ATUALIZAR PREVIEWS FINAIS ---
+    // --- FUNÇÃO DE ATUALIZAÇÃO FINAL (COM LÓGICA DE OCULTAR) ---
     function updateFinalPreviews() {
         const title = document.getElementById('step2Title').value || "TÍTULO DO PRODUTO";
-        const oldPrice = document.getElementById('step3OldPrice').value || "R$ 0,00";
-        const promoPrice = document.getElementById('step3PromoPrice').value || "VALOR";
+        const oldInputVal = document.getElementById('step3OldPrice').value;
+        const promoInputVal = document.getElementById('step3PromoPrice').value;
 
+        // Atualiza Títulos
         document.getElementById('viewDescFeed').innerText = title;
         document.getElementById('viewDescStory').innerText = title;
 
-        document.getElementById('viewOldFeed').innerText = oldPrice;
-        document.getElementById('viewOldStory').innerText = oldPrice;
+        // Atualiza Preço Antigo (com lógica de ocultar)
+        const hideOld = shouldHidePrice(oldInputVal);
+        const oldDisplay = hideOld ? 'none' : 'block';
+        const viewOldFeed = document.getElementById('viewOldFeed'); const viewOldStory = document.getElementById('viewOldStory');
+        viewOldFeed.innerText = oldInputVal || ""; viewOldFeed.style.display = oldDisplay;
+        viewOldStory.innerText = oldInputVal || ""; viewOldStory.style.display = oldDisplay;
 
-        document.getElementById('viewPromoFeed').innerText = promoPrice;
-        document.getElementById('viewPromoStory').innerText = promoPrice;
+        // Atualiza Preço Promo (com lógica de ocultar)
+        const hidePromo = shouldHidePrice(promoInputVal);
+        // Nota: o botão promo usa 'inline-flex' no CSS original, então restauramos para isso
+        const promoDisplay = hidePromo ? 'none' : 'inline-flex';
+        const viewPromoFeed = document.getElementById('viewPromoFeed'); const viewPromoStory = document.getElementById('viewPromoStory');
+        viewPromoFeed.innerText = promoInputVal || "VALOR"; viewPromoFeed.style.display = promoDisplay;
+        viewPromoStory.innerText = promoInputVal || "VALOR"; viewPromoStory.style.display = promoDisplay;
     }
 
 
-    // --- FUNÇÕES DE CONTROLE E DOWNLOAD (CORRIGIDAS E ROBUSTAS) ---
-    function adjustValue(elementId, variableName, change) {
-        const element = document.getElementById(elementId);
-        const style = getComputedStyle(element);
-        let currentSize = parseInt(style.getPropertyValue(variableName).trim()) || 0;
-        let newSize = currentSize + change;
-        if (newSize < 8) newSize = 8; 
-        if (newSize > 400) newSize = 400; 
-        element.style.setProperty(variableName, newSize + 'px');
-        const displayId = 'disp' + variableName.replace('--', '-');
+    // --- NOVAS FUNÇÕES DE CONTROLE (BASEADAS NO ESTADO GLOBAL - INFALÍVEIS) ---
+    function adjustPos(type, target, axis, change) {
+        // type: 'feed'/'story', target: 'img'/'desc'/'old'/'btn', axis: 'top'/'left'
+        const stateKey = target + (axis === 'top' ? 'Top' : 'Left'); // ex: imgTop
+        const containerId = type + '-design';
+        const cssVar = '--' + type.charAt(0) + '-' + target + '-' + axis; // ex: --f-img-top
+
+        // 1. Atualiza o estado
+        appState[type][stateKey] += change;
+
+        // 2. Aplica a mudança no DOM
+        document.getElementById(containerId).style.setProperty(cssVar, appState[type][stateKey] + 'px');
+    }
+
+    function adjustValue(type, target, change) {
+        // target: 'desc'/'old'/'btn'
+        const stateKey = target + 'Size'; // ex: descSize
+        const containerId = type + '-design';
+        const cssVar = '--' + type.charAt(0) + '-' + target + '-size'; // ex: --f-desc-size
+        const displayId = 'disp-' + type.charAt(0) + '-' + target + '-size'; // ex: disp-f-desc-size
+
+        // 1. Atualiza o estado com limites
+        let newSize = appState[type][stateKey] + change;
+        if (newSize < 8) newSize = 8; if (newSize > 400) newSize = 400;
+        appState[type][stateKey] = newSize;
+
+        // 2. Aplica no DOM e atualiza o display numérico
+        document.getElementById(containerId).style.setProperty(cssVar, newSize + 'px');
         document.getElementById(displayId).innerText = newSize;
     }
 
-    function adjustPos(containerId, varTop, varLeft, axis, change) {
-        const container = document.getElementById(containerId);
-        const style = getComputedStyle(container);
-        const targetVar = (axis === 'top') ? varTop : varLeft;
-        // Lê o valor atual, garante que é número, fallback para 0
-        let currentValStr = style.getPropertyValue(targetVar).trim();
-        let currentVal = currentValStr ? parseInt(currentValStr) : 0;
-        
-        let newVal = currentVal + change;
-        container.style.setProperty(targetVar, newVal + 'px');
-    }
+    function adjustScale(type, change) {
+        const stateKey = 'imgScale';
+        const containerId = type + '-design';
+        const cssVar = '--' + type.charAt(0) + '-img-scale';
+        const displayId = 'disp-' + type.charAt(0) + '-img-scale';
 
-    function adjustScale(elementId, variableName, change) {
-        const element = document.getElementById(elementId);
-        const style = getComputedStyle(element);
-        let currentScale = parseFloat(style.getPropertyValue(variableName).trim()) || 1.0;
-        let newScale = currentScale + change;
-        if (newScale < 0.5) newScale = 0.5;
-        if (newScale > 3.0) newScale = 3.0;
-        element.style.setProperty(variableName, newScale.toFixed(1));
-        const displayId = 'disp' + variableName.replace('--', '-');
+        // 1. Atualiza o estado com limites
+        let newScale = appState[type][stateKey] + change;
+        if (newScale < 0.5) newScale = 0.5; if (newScale > 3.0) newScale = 3.0;
+        appState[type][stateKey] = newScale;
+
+        // 2. Aplica no DOM
+        document.getElementById(containerId).style.setProperty(cssVar, newScale.toFixed(1));
         document.getElementById(displayId).innerText = Math.round(newScale * 100) + '%';
     }
 
     async function download(id, name) { const area=document.getElementById(id); if(area.style.backgroundImage===''){alert("Selecione um fundo na Etapa 1.");return;} const canvas=await html2canvas(area,{scale:3,useCORS:true}); const link=document.createElement('a'); link.download=`${name}.png`; link.href=canvas.toDataURL('image/png'); link.click(); }
 
-    // Inicializa a UI
     updateWizardUI();
 </script>
 </body>
