@@ -1,349 +1,182 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v30 (Fluxo Unificado)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        /* --- ESTILOS GERAIS (Base mantida v29) --- */
-        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --panel-border: #e0e0e0; --step-active: #007bff; --dark-grey: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .main-container { width: 100%; max-width: 1100px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 30px; box-sizing: border-box; }
-        .step-indicator-container { display: flex; justify-content: space-between; margin-bottom: 30px; position: relative; max-width: 600px; margin-left: auto; margin-right: auto; }
-        .step-indicator-container::before { content: ''; position: absolute; top: 15px; left: 0; width: 100%; height: 3px; background: #eee; z-index: 0; }
-        .step-indicator { position: relative; z-index: 1; background: #eee; color: #999; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.3s; }
-        .step-indicator.active { background: var(--shopee-red); color: white; box-shadow: 0 0 0 4px rgba(255, 45, 45, 0.2); }
-        .step-indicator.completed { background: var(--success-green); color: white; }
-        .step-content { display: none; animation: fadeIn 0.4s ease-in-out; }
-        .step-content.active-step { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        h2 { color: #333; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 25px; }
-        .form-group { margin-bottom: 20px; }
-        label { font-weight: bold; font-size: 0.9rem; color: #555; display: block; margin-bottom: 8px; }
-        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: var(--shopee-red); outline: none; }
-        .upload-container-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .styled-upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; background: #fafafa; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
-        .styled-upload-box:hover { background: #f0f0f0; border-color: var(--shopee-red); }
-        .upload-icon { font-size: 2rem; color: #999; margin-bottom: 10px; }
-        .upload-thumbnail { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none; }
-        .file-status { font-size: 0.8rem; color: var(--success-green); margin-top: 5px; font-weight: bold; display: none; }
-        .nav-buttons { display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
-        .btn-nav { padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s; }
-        .btn-prev { background: #e0e0e0; color: #555; }
-        .btn-next { background: var(--shopee-red); color: white; margin-left: auto; }
-        .btn-disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* --- ESTILOS DA ÁREA DE API --- */
-        .link-extraction-group { display: flex; gap: 10px; margin-bottom: 5px; }
-        .btn-api { background: var(--shopee-red); color: white; border: none; border-radius: 8px; padding: 0 25px; font-weight: bold; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 8px; transition: 0.3s;}
-        .btn-api:hover { background: #d60000; }
-        .btn-api:disabled { background: #ccc; cursor: not-allowed; opacity: 0.7; }
-        #api-status { margin-top: 8px; font-size: 0.9rem; font-weight: bold; min-height: 20px; }
-        .status-loading { color: #666; }
-        .status-success { color: var(--success-green); }
-        .status-error { color: var(--shopee-red); }
-        .link-helper { font-size: 0.8rem; color: #888; margin-top: 5px; background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107; }
+  <meta charset="UTF-8" />
+  <title>Gerador de Post Shopee</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        /* --- PREVIEWS E CONTROLES --- */
-        .final-step-container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
-        .preview-wrapper { display: flex; gap: 15px; align-items: flex-start; }
-        @media (max-width: 800px) { .preview-wrapper { flex-wrap: wrap; justify-content: center; } }
-        .canvas-column { display: flex; flex-direction: column; align-items: center; }
-        .control-panel { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-width: 165px; overflow: hidden; border: 1px solid var(--panel-border); }
-        .panel-header { background: #f9f9f9; padding: 10px; text-align: center; font-weight: 800; color: #555; font-size: 0.85rem; border-bottom: 1px solid var(--panel-border); text-transform: uppercase; }
-        .unified-group { padding: 12px 10px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 6px; }
-        .unified-group:last-child { border-bottom: none; }
-        .control-label { font-size: 0.7rem; font-weight: 800; color: #333; margin-bottom: 2px; display: block; text-transform: uppercase;}
-        .special-label { color: var(--shopee-red); }
-        .size-actions, .move-actions { display: flex; align-items: center; justify-content: space-between; background: #f0f0f0; border-radius: 6px; padding: 3px;}
-        .move-actions { justify-content: center; gap: 3px; }
-        .btn-size, .btn-move { width: 26px; height: 26px; border: 1px solid #ddd; background: white; color: #333; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-size:hover, .btn-move:hover { background: #eee; }
-        .size-display { font-size: 0.8rem; font-weight: bold; color: #555; }
-        .design-canvas { background-color: #ddd; background-size: 100% 100%; background-repeat: no-repeat; position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .movable-item { position: absolute; width: 100%; left: 0; }
-        .image-wrapper { display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .img-display { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.2s ease; }
-        .text-desc { text-align: center; font-weight: 700; color: #333; text-transform: uppercase; line-height: 1.3; display: flex; align-items: center; justify-content: center; padding: 0 20px; box-sizing: border-box; }
-        .price-container { display: flex; flex-direction: column; align-items: flex-start; padding-left: 20px; box-sizing: border-box;}
-        .price-old { color: var(--dark-grey); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
-        .price-promo { color: var(--shopee-red); font-weight: 900; margin-bottom: 2px; display: block; }
-        .economy-text { color: var(--dark-grey); font-weight: bold; display: block; }
-        .discount-badge { position: absolute; right: 15px; background-color: var(--dark-grey); color: white; padding: 4px 10px; border-radius: 6px; font-weight: 800; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
-        
-        /* FEED VARS & POSITIONS */
-        #feed-design { width: 360px; height: 450px; --f-desc-size: 12px; --f-old-size: 13px; --f-promo-size: 22px; --f-econ-size: 12px; --f-img-scale: 1; --f-img-top: 125px; --f-img-left: 0px; --f-desc-top: 295px; --f-desc-left: 0px; --f-price-top: 350px; --f-price-left: 0px; --f-badge-top: 15px; --f-badge-right: 15px;}
-        #feed-design .image-wrapper { height: 170px; top: var(--f-img-top); left: var(--f-img-left); }
-        #feed-design .img-display { transform: scale(var(--f-img-scale)); }
-        #feed-design .text-desc { font-size: var(--f-desc-size); height: 45px; top: var(--f-desc-top); left: var(--f-desc-left); }
-        #feed-design .price-container { top: var(--f-price-top); left: var(--f-price-left); }
-        #feed-design .price-old { font-size: var(--f-old-size); }
-        #feed-design .price-promo { font-size: var(--f-promo-size); }
-        #feed-design .economy-text { font-size: var(--f-econ-size); }
-        #feed-design .discount-badge { top: var(--f-badge-top); right: var(--f-badge-right); }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
 
-        /* STORY VARS & POSITIONS */
-        #story-design { width: 324px; height: 576px; --s-desc-size: 14px; --s-old-size: 15px; --s-promo-size: 26px; --s-econ-size: 13px; --s-img-scale: 1; --s-img-top: 155px; --s-img-left: 0px; --s-desc-top: 340px; --s-desc-left: 0px; --s-price-top: 410px; --s-price-left: 0px; --s-badge-top: 20px; --s-badge-right: 20px;}
-        #story-design .image-wrapper { height: 185px; top: var(--s-img-top); left: var(--s-img-left); }
-        #story-design .img-display { transform: scale(var(--s-img-scale)); }
-        #story-design .text-desc { font-size: var(--s-desc-size); height: 60px; top: var(--s-desc-top); left: var(--s-desc-left); }
-        #story-design .price-container { top: var(--s-price-top); left: var(--s-price-left); }
-        #story-design .price-old { font-size: var(--s-old-size); }
-        #story-design .price-promo { font-size: var(--s-promo-size); }
-        #story-design .economy-text { font-size: var(--s-econ-size); }
-        #story-design .discount-badge { top: var(--s-badge-top); right: var(--s-badge-right); }
-        
-        .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .download-btn:hover { background: #219653; }
-        .btn-story { background: #8e44ad; }
-    </style>
+    .container {
+      max-width: 480px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #ee4d2d;
+      color: #fff;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .card {
+      margin-top: 24px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 14px;
+      resize: none;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
 </head>
+
 <body>
 
-    <div class="main-container">
-        <div class="step-indicator-container">
-            <div class="step-indicator active" id="indicator1">1</div>
-            <div class="step-indicator" id="indicator2">2</div>
-            <div class="step-indicator" id="indicator3">3</div>
-        </div>
+  <div class="container">
+    <h2>Gerador de Post Shopee</h2>
 
-        <div class="step-content active-step" data-step="1">
-            <h2>Etapa 1: Imagens e Fundos</h2>
-            <div class="upload-container-grid">
-                <div class="styled-upload-box" onclick="document.getElementById('file-feed').click()">
-                    <img id="thumb-feed" class="upload-thumbnail" src=""><i id="icon-feed" class="upload-icon">🖼️</i><label style="cursor: pointer;">Fundo do Feed (4:5)</label>
-                    <input id="file-feed" type="file" hidden accept="image/*" onchange="handleFileSelect(event, 'feed', 'status-feed')"><span id="status-feed" class="file-status">Imagem selecionada!</span>
-                </div>
-                <div class="styled-upload-box" onclick="document.getElementById('file-story').click()">
-                    <img id="thumb-story" class="upload-thumbnail" src=""><i id="icon-story" class="upload-icon">📱</i><label style="cursor: pointer;">Fundo do Story (9:16)</label>
-                    <input id="file-story" type="file" hidden accept="image/*" onchange="handleFileSelect(event, 'story', 'status-story')"><span id="status-story" class="file-status">Imagem selecionada!</span>
-                </div>
-                <div class="styled-upload-box" onclick="document.getElementById('inputImg').click()" style="border-color: var(--shopee-red); background: #fff5f5;">
-                    <img id="thumb-prod" class="upload-thumbnail" src=""><i id="icon-prod" class="upload-icon" style="color: var(--shopee-red);">📸</i><label style="cursor: pointer; color: var(--shopee-red);">Imagem do Produto</label>
-                    <input type="file" id="inputImg" hidden accept="image/*" onchange="handleProductImg(event)"><span id="status-prod" class="file-status" style="color: var(--shopee-red);">Imagem selecionada!</span>
-                </div>
-            </div>
-        </div>
+    <input
+      type="text"
+      id="shopeeLink"
+      placeholder="Cole o link da Shopee aqui"
+    />
 
-        <div class="step-content" data-step="2">
-            <h2>Etapa 2: Dados da Oferta (Via API ou Manual)</h2>
-            
-            <div class="form-group" style="background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #eee;">
-                <label for="step2Link">Link do Produto (Shopee - Curto ou Longo)</label>
-                <div class="link-extraction-group">
-                    <input type="text" id="step2Link" placeholder="Cole o link aqui (ex: https://s.shopee.com.br/...)">
-                    <button id="btnApiCall" class="btn-api" onclick="fetchApiData()">
-                        <span>🚀</span> Buscar Dados Oficial
-                    </button>
-                </div>
-                <div id="api-status"></div>
-                <p class="link-helper" style="margin-bottom: 0;">💡 A API busca Título, Preços e a Imagem principal automaticamente.</p>
-            </div>
+    <button id="generateBtn" onclick="fetchApiData()">
+      Gerar Post
+    </button>
 
-            <div class="form-group">
-                <label for="step2Title">Título/Descrição (Verifique ou Digite)</label>
-                <textarea id="step2Title" rows="3" placeholder="O título aparecerá aqui..."></textarea>
-            </div>
+    <div id="error" class="error"></div>
 
-            <div style="display: flex; gap: 20px;">
-                <div class="form-group" style="flex: 1;">
-                    <label for="step3OldPrice">Preço Antigo (De:)</label>
-                    <input type="text" id="step3OldPrice" placeholder="R$ 0,00" oninput="formatCurrencyInput(this)">
-                    <small style="color: #888;">Deixe em branco se não houver.</small>
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label for="step3PromoPrice" style="color: var(--shopee-red);">Preço Promocional (Por:)</label>
-                    <input type="text" id="step3PromoPrice" placeholder="R$ 0,00" style="border-color: var(--shopee-red); font-weight: bold;" oninput="formatCurrencyInput(this)">
-                </div>
-            </div>
-        </div>
+    <div id="result" class="card" style="display:none;">
+      <img id="productImage" />
+      <h3 id="productTitle"></h3>
+      <p><strong id="productPrice"></strong></p>
 
-        <div class="step-content" data-step="3">
-            <h2>Etapa 3: Ajustes Finais e Download</h2>
-            
-            <div class="final-step-container">
-                 <div class="preview-wrapper">
-                    <div class="canvas-column">
-                        <div style="font-weight: bold; margin-bottom: 10px; text-align: center;">Feed</div>
-                        <div id="feed-design" class="design-canvas">
-                            <div id="viewBadgeFeed" class="discount-badge">-0%</div>
-                            <div class="image-wrapper movable-item"><img id="viewImgFeed" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
-                            <div id="viewDescFeed" class="text-desc movable-item">AGUARDANDO...</div>
-                            <div class="price-container movable-item">
-                                <div id="viewOldFeed" class="price-old">R$ 0,00</div>
-                                <div id="viewPromoFeed" class="price-promo">R$ 0,00</div>
-                                <div id="viewEconomyFeed" class="economy-text">Economize R$ 0,00 off</div>
-                            </div>
-                        </div>
-                        <button class="download-btn" onclick="download('feed-design', 'post-feed')">BAIXAR FEED</button>
-                    </div>
-                    <div class="control-panel">
-                        <div class="panel-header">Ajustes Feed</div>
-                         <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'img', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('feed', -0.1)">-</button><span id="disp-f-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('feed', 0.1)">+</button></div></div>
-                        <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'desc', -1)">-</button><span id="disp-f-desc-size" class="size-display">12</span><button class="btn-size" onclick="adjustValue('feed', 'desc', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'desc', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label special-label">Preços (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'promo', -1)">-</button><span id="disp-f-promo-size" class="size-display">22</span><button class="btn-size" onclick="adjustValue('feed', 'promo', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'price', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'price', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'price', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'price', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label">Badge Desconto (Posição)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'badge', 'top', -5)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'top', 5)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'right', 5)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'right', -5)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label">Texto Economia (Fonte)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'econ', -1)">-</button><span id="disp-f-econ-size" class="size-display">12</span><button class="btn-size" onclick="adjustValue('feed', 'econ', 1)">+</button></div></div>
-                    </div>
-                </div>
+      <textarea id="caption" readonly></textarea>
 
-                <div class="preview-wrapper">
-                    <div class="canvas-column">
-                        <div style="font-weight: bold; margin-bottom: 10px; text-align: center;">Story</div>
-                        <div id="story-design" class="design-canvas">
-                            <div id="viewBadgeStory" class="discount-badge">-0%</div>
-                            <div class="image-wrapper movable-item"><img id="viewImgStory" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
-                            <div id="viewDescStory" class="text-desc movable-item">AGUARDANDO...</div>
-                            <div class="price-container movable-item">
-                                <div id="viewOldStory" class="price-old">R$ 0,00</div>
-                                <div id="viewPromoStory" class="price-promo">R$ 0,00</div>
-                                <div id="viewEconomyStory" class="economy-text">Economize R$ 0,00 off</div>
-                            </div>
-                        </div>
-                        <button class="download-btn btn-story" onclick="download('story-design', 'post-story')">BAIXAR STORY</button>
-                    </div>
-                    <div class="control-panel" style="border-color: #8e44ad;">
-                        <div class="panel-header" style="background: #f4eafc; color: #8e44ad;">Ajustes Story</div>
-                        <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'img', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('story', -0.1)">-</button><span id="disp-s-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('story', 0.1)">+</button></div></div>
-                        <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'desc', -1)">-</button><span id="disp-s-desc-size" class="size-display">14</span><button class="btn-size" onclick="adjustValue('story', 'desc', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'desc', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label special-label">Preços (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'promo', -1)">-</button><span id="disp-s-promo-size" class="size-display">26</span><button class="btn-size" onclick="adjustValue('story', 'promo', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'price', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'price', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'price', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'price', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label">Badge Desconto (Posição)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'badge', 'top', -5)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'top', 5)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'right', 5)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'right', -5)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label">Texto Economia (Fonte)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'econ', -1)">-</button><span id="disp-s-econ-size" class="size-display">13</span><button class="btn-size" onclick="adjustValue('story', 'econ', 1)">+</button></div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="nav-buttons">
-            <button class="btn-nav btn-prev" id="btnPrev" onclick="changeStep(-1)" disabled>Voltar</button>
-            <button class="btn-nav btn-next" id="btnNext" onclick="changeStep(1)">Continuar</button>
-        </div>
+      <button onclick="copyCaption()" style="margin-top:10px;">
+        Copiar legenda
+      </button>
     </div>
+  </div>
 
-<script>
-    // ESTADO GLOBAL (Mantidos v28)
-    let appState = { 
-        feed: { imgTop: 125, imgLeft: 0, imgScale: 1.0, descTop: 295, descLeft: 0, descSize: 12, priceTop: 350, priceLeft: 0, oldSize: 13, promoSize: 22, badgeTop: 15, badgeRight: 15, econSize: 12 }, 
-        story: { imgTop: 155, imgLeft: 0, imgScale: 1.0, descTop: 340, descLeft: 0, descSize: 14, priceTop: 410, priceLeft: 0, oldSize: 15, promoSize: 26, badgeTop: 20, badgeRight: 20, econSize: 13 } 
-    };
-    // ATENÇÃO: Total de etapas reduzido para 3
-    let currentStep = 1; const totalSteps = 3;
-
-    // --- LÓGICA DO WIZARD (Atualizada para 3 etapas) ---
-    function changeStep(direction) { 
-        const newStep = currentStep + direction; 
-        if (newStep < 1 || newStep > totalSteps) return; 
-        // Validação na Etapa 2 antes de ir para a final
-        if (direction === 1 && currentStep === 2 && !document.getElementById('step2Title').value.trim()) { 
-            alert("Por favor, informe um título para o produto antes de continuar."); return; 
-        } 
-        currentStep = newStep; 
-        updateWizardUI(); 
-        // Se chegou na última etapa (agora a 3), atualiza os previews
-        if (currentStep === totalSteps) { updateFinalPreviews(); } 
-    }
-    function updateWizardUI() { document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active-step')); document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active-step'); for (let i = 1; i <= totalSteps; i++) { const indicator = document.getElementById(`indicator${i}`); indicator.classList.remove('active', 'completed'); if (i < currentStep) indicator.classList.add('completed'); if (i === currentStep) indicator.classList.add('active'); } document.getElementById('btnPrev').disabled = currentStep === 1; document.getElementById('btnNext').textContent = currentStep === totalSteps ? "Concluir" : "Continuar"; if(currentStep === totalSteps) document.getElementById('btnNext').style.display = 'none'; else document.getElementById('btnNext').style.display = 'block'; }
-
-    // --- FUNÇÕES DE UPLOAD (Mantidas) ---
-    function handleFileSelect(event, type, statusId) { const file = event.target.files[0]; if (file) { const bgUrl = URL.createObjectURL(file); document.getElementById(type === 'feed' ? 'feed-design' : 'story-design').style.backgroundImage = `url(${bgUrl})`; document.getElementById('thumb-' + type).src = bgUrl; document.getElementById('thumb-' + type).style.display = 'block'; document.getElementById('icon-' + type).style.display = 'none'; document.getElementById(statusId).style.display = 'block'; } }
-    function handleProductImg(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = function(e) { updateProductImageDisplays(e.target.result); }; reader.readAsDataURL(file); } }
-    function updateProductImageDisplays(imageUrl) { document.getElementById('viewImgFeed').src = imageUrl; document.getElementById('viewImgStory').src = imageUrl; document.getElementById('thumb-prod').src = imageUrl; document.getElementById('thumb-prod').style.display = 'block'; document.getElementById('icon-prod').style.display = 'none'; document.getElementById('status-prod').style.display = 'block'; }
-
-    // --- FUNÇÃO CHAMADA API VERCEL (Mantida v29 - Essencial para links curtos) ---
+  <script>
     async function fetchApiData() {
-        const url = document.getElementById('step2Link').value.trim();
-        const statusDiv = document.getElementById('api-status');
-        const btnApi = document.getElementById('btnApiCall');
+      const url = document.getElementById("shopeeLink").value;
+      const btn = document.getElementById("generateBtn");
+      const errorDiv = document.getElementById("error");
 
-        if (!url) { alert("Cole um link primeiro."); return; }
-        
-        statusDiv.innerText = "⏳ Consultando API Oficial (aguarde)...";
-        statusDiv.className = 'status-loading';
-        btnApi.disabled = true;
+      errorDiv.innerText = "";
+      btn.disabled = true;
+      btn.innerText = "Gerando...";
 
-        try {
-            // Chama seu backend na Vercel que resolve links curtos e acessa a Shopee
-            const response = await fetch('/api/extract', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ link: url })
-            });
+      try {
+        const response = await fetch(
+          "http://host.docker.internal:5678/webhook-test/shopee-post",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ link: url })
+          }
+        );
 
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-            const result = await response.json();
-
-            if (result.success) {
-                statusDiv.innerText = `✅ Sucesso! Dados carregados.`;
-                statusDiv.className = 'status-success';
-                
-                const data = result.data;
-                if(data.title) document.getElementById('step2Title').value = data.title.toUpperCase();
-                
-                // Formata e preenche preços nos campos que agora estão na Etapa 2
-                const oldPriceInput = document.getElementById('step3OldPrice');
-                const promoPriceInput = document.getElementById('step3PromoPrice');
-
-                const formatForInput = (valStr) => {
-                     if(!valStr) return "";
-                     return "R$ " + parseFloat(valStr).toFixed(2).replace('.',',').replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-                };
-
-                oldPriceInput.value = formatForInput(data.priceOld);
-                promoPriceInput.value = formatForInput(data.pricePromo);
-
-                if(data.imageUrl) {
-                    updateProductImageDisplays(data.imageUrl);
-                    statusDiv.innerText += " (Imagem atualizada!)";
-                }
-
-            } else {
-                throw new Error(result.error || "Erro desconhecido na API.");
-            }
-
-        } catch (error) {
-            console.error(error);
-            statusDiv.innerText = `❌ Erro: ${error.message}`;
-            statusDiv.className = 'status-error';
-        } finally {
-            btnApi.disabled = false;
+        if (!response.ok) {
+          throw new Error("Erro na requisição");
         }
-    }
-    
-    // --- FORMATAÇÃO E CÁLCULO DE PREÇOS (Mantidos v28) ---
-    function formatCurrencyInput(input) { let value = input.value.replace(/\D/g, ''); value = (parseInt(value) / 100).toFixed(2) + ''; value = value.replace(".", ","); value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); input.value = "R$ " + value; }
-    function parseCurrency(str) { if (!str) return 0; const cleanStr = str.replace('R$', '').replace(/\./g, '').replace(',', '.').trim(); return parseFloat(cleanStr) || 0; }
-    function formatMoney(num) { return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-    // --- ATUALIZAÇÃO DOS PREVIEWS E CÁLCULO FINAL (Mantida v28) ---
-    function updateFinalPreviews() {
-        const title = document.getElementById('step2Title').value || "TÍTULO DO PRODUTO";
-        // Pega os valores dos inputs que agora estão na Etapa 2
-        const oldInputVal = document.getElementById('step3OldPrice').value;
-        const promoInputVal = document.getElementById('step3PromoPrice').value;
-        
-        document.getElementById('viewDescFeed').innerText = title; document.getElementById('viewDescStory').innerText = title;
-        
-        // Cálculo do Desconto
-        const oldVal = parseCurrency(oldInputVal); const promoVal = parseCurrency(promoInputVal);
-        let badgeText = ""; let economyHtml = ""; let showDiscount = false;
-        if (oldVal > promoVal && oldVal > 0) { showDiscount = true; const diff = oldVal - promoVal; const percent = Math.round((diff / oldVal) * 100); badgeText = `-${percent}%`; economyHtml = `Economize ${formatMoney(diff)} off`; }
-        
-        const updateView = (type) => {
-            const viewOld = document.getElementById('viewOld' + type); const viewPromo = document.getElementById('viewPromo' + type); const viewBadge = document.getElementById('viewBadge' + type); const viewEconomy = document.getElementById('viewEconomy' + type);
-            viewOld.innerText = oldInputVal || ""; viewOld.style.display = (oldVal > 0 && showDiscount) ? 'block' : 'none';
-            viewPromo.innerText = promoInputVal || "VALOR";
-            viewBadge.innerText = badgeText; viewBadge.style.display = showDiscount ? 'block' : 'none';
-            viewEconomy.innerHTML = economyHtml; viewEconomy.style.display = showDiscount ? 'block' : 'none';
-        };
-        updateView('Feed'); updateView('Story');
+        const json = await response.json();
+
+        if (!json.success) {
+          throw new Error("Resposta inválida");
+        }
+
+        renderResult(json.data);
+
+      } catch (err) {
+        errorDiv.innerText = "Não foi possível gerar o post.";
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Gerar Post";
+      }
     }
 
-    // --- FUNÇÕES DE CONTROLE (Mantidas v28) ---
-    function adjustPos(t,e,a,o){const n=e+(a==="top"?"Top":a==="left"?"Left":"Right"),d=t+"-design",s="--"+t.charAt(0)+"-"+e+"-"+a;appState[t][n]+=o,document.getElementById(d).style.setProperty(s,appState[t][n]+"px")}function adjustValue(t,e,a){const o=e+"Size",n=t+"-design",d="--"+t.charAt(0)+"-"+e+"-size",s="disp-"+t.charAt(0)+"-"+e+"-size";let r=appState[t][o]+a;r<8&&(r=8),r>400&&(r=400),appState[t][o]=r,document.getElementById(n).style.setProperty(d,r+"px"),document.getElementById(s).innerText=r}function adjustScale(t,e){const a="imgScale",o=t+"-design",n="--"+t.charAt(0)+"-img-scale",d="disp-"+t.charAt(0)+"-img-scale";let s=appState[t][a]+e;s<.5&&(s=.5),s>3&&(s=3),appState[t][a]=s,document.getElementById(o).style.setProperty(n,s.toFixed(1)),document.getElementById(d).innerText=Math.round(100*s)+"%"}async function download(t,e){const a=document.getElementById(t);if(a.style.backgroundImage==="")return alert("Selecione um fundo na Etapa 1."),void 0;const o=await html2canvas(a,{scale:3,useCORS:!0}),n=document.createElement("a");n.download=`${e}.png`,n.href=o.toDataURL("image/png"),n.click()}
+    function renderResult(data) {
+      document.getElementById("result").style.display = "block";
+      document.getElementById("productImage").src = data.imageUrl;
+      document.getElementById("productTitle").innerText = data.title;
+      document.getElementById("productPrice").innerText =
+        data.pricePromo ? "R$ " + data.pricePromo : "";
 
-    updateWizardUI();
-</script>
+      document.getElementById("caption").value =
+`🔥 OFERTA IMPERDÍVEL 🔥
+
+${data.title}
+💰 Apenas R$ ${data.pricePromo}
+
+👉 Garanta o seu agora!
+`;
+    }
+
+    function copyCaption() {
+      const textarea = document.getElementById("caption");
+      textarea.select();
+      document.execCommand("copy");
+      alert("Legenda copiada!");
+    }
+  </script>
+
 </body>
 </html>
