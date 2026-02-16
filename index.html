@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cofre de Ofertas v28 (Badge Rápido)</title>
+    <title>Cofre de Ofertas v29 (Com Cupom)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* --- ESTILOS GERAIS (Mantidos v27) --- */
-        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --panel-border: #e0e0e0; --step-active: #007bff; --dark-grey: #333; }
+        /* --- ESTILOS GERAIS --- */
+        :root { --shopee-red: #ff2d2d; --bg-color: #f0f0f0; --success-green: #2e7d32; --panel-border: #e0e0e0; --step-active: #007bff; --dark-grey: #333; --coupon-color: #ffc107; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .main-container { width: 100%; max-width: 1100px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 30px; box-sizing: border-box; }
         .step-indicator-container { display: flex; justify-content: space-between; margin-bottom: 30px; position: relative; }
@@ -38,7 +38,7 @@
         .btn-extract { background: #333; color: white; border: none; border-radius: 8px; padding: 0 25px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .link-helper { font-size: 0.8rem; color: #888; margin-top: 5px; background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107; }
 
-        /* --- PREVIEWS E CONTROLES (Mantidos v27) --- */
+        /* --- PREVIEWS E CONTROLES --- */
         .final-step-container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
         .preview-wrapper { display: flex; gap: 15px; align-items: flex-start; }
         @media (max-width: 800px) { .preview-wrapper { flex-wrap: wrap; justify-content: center; } }
@@ -55,7 +55,7 @@
         .btn-size:hover, .btn-move:hover { background: #eee; }
         .size-display { font-size: 0.8rem; font-weight: bold; color: #555; }
         
-        /* --- CANVAS E ELEMENTOS MOVIVEIS (Mantidos v27) --- */
+        /* --- CANVAS E ELEMENTOS MOVIVEIS --- */
         .design-canvas { background-color: #ddd; background-size: 100% 100%; background-repeat: no-repeat; position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
         .movable-item { position: absolute; width: 100%; left: 0; }
         .image-wrapper { display: flex; align-items: center; justify-content: center; overflow: hidden; }
@@ -65,9 +65,41 @@
         .price-old { color: var(--dark-grey); text-decoration: line-through; font-weight: bold; margin-bottom: 2px; }
         .price-promo { color: var(--shopee-red); font-weight: 900; margin-bottom: 2px; display: block; }
         .economy-text { color: var(--dark-grey); font-weight: bold; display: block; }
-        .discount-badge { position: absolute; right: 15px; background-color: var(--dark-grey); color: white; padding: 4px 10px; border-radius: 6px; font-weight: 800; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
         
-        /* FEED VARS & POSITIONS (Mantidos v27) */
+        /* NOVO: WRAPPER PARA BADGES E CUPOM */
+        .badge-wrapper {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end; /* Alinha à direita */
+            gap: 6px;
+        }
+
+        .discount-badge { 
+            background-color: var(--dark-grey); 
+            color: white; 
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            font-size: 14px;
+        }
+
+        .coupon-badge {
+            background-color: var(--coupon-color);
+            color: #333;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 12px;
+            display: none; /* Oculto por padrão */
+        }
+        
+        /* FEED VARS & POSITIONS */
         #feed-design { width: 360px; height: 450px; --f-desc-size: 12px; --f-old-size: 13px; --f-promo-size: 22px; --f-econ-size: 12px; --f-img-scale: 1; --f-img-top: 125px; --f-img-left: 0px; --f-desc-top: 295px; --f-desc-left: 0px; --f-price-top: 350px; --f-price-left: 0px; --f-badge-top: 15px; --f-badge-right: 15px;}
         #feed-design .image-wrapper { height: 170px; top: var(--f-img-top); left: var(--f-img-left); }
         #feed-design .img-display { transform: scale(var(--f-img-scale)); }
@@ -76,9 +108,10 @@
         #feed-design .price-old { font-size: var(--f-old-size); }
         #feed-design .price-promo { font-size: var(--f-promo-size); }
         #feed-design .economy-text { font-size: var(--f-econ-size); }
-        #feed-design .discount-badge { top: var(--f-badge-top); right: var(--f-badge-right); }
+        /* Aplica a posição no Wrapper, não na badge individual */
+        #feed-design .badge-wrapper { top: var(--f-badge-top); right: var(--f-badge-right); }
 
-        /* STORY VARS & POSITIONS (Mantidos v27) */
+        /* STORY VARS & POSITIONS */
         #story-design { width: 324px; height: 576px; --s-desc-size: 14px; --s-old-size: 15px; --s-promo-size: 26px; --s-econ-size: 13px; --s-img-scale: 1; --s-img-top: 155px; --s-img-left: 0px; --s-desc-top: 340px; --s-desc-left: 0px; --s-price-top: 410px; --s-price-left: 0px; --s-badge-top: 20px; --s-badge-right: 20px;}
         #story-design .image-wrapper { height: 185px; top: var(--s-img-top); left: var(--s-img-left); }
         #story-design .img-display { transform: scale(var(--s-img-scale)); }
@@ -87,7 +120,8 @@
         #story-design .price-old { font-size: var(--s-old-size); }
         #story-design .price-promo { font-size: var(--s-promo-size); }
         #story-design .economy-text { font-size: var(--s-econ-size); }
-        #story-design .discount-badge { top: var(--s-badge-top); right: var(--s-badge-right); }
+        /* Aplica a posição no Wrapper */
+        #story-design .badge-wrapper { top: var(--s-badge-top); right: var(--s-badge-right); }
         
         .download-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
         .download-btn:hover { background: #219653; }
@@ -139,18 +173,22 @@
         </div>
 
         <div class="step-content" data-step="3">
-            <h2>Etapa 3: Valores da Oferta</h2>
+            <h2>Etapa 3: Valores da Oferta & Cupom</h2>
             <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">O sistema calculará o desconto automaticamente se ambos os valores forem preenchidos.</p>
-            <div style="display: flex; gap: 20px;">
-                <div class="form-group" style="flex: 1;">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 150px;">
                     <label for="step3OldPrice">Preço Antigo (De:)</label>
                     <input type="text" id="step3OldPrice" placeholder="R$ 0,00" oninput="formatCurrencyInput(this)">
-                    <small style="color: #888;">Deixe em branco ou 0 para ocultar.</small>
                 </div>
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group" style="flex: 1; min-width: 150px;">
                     <label for="step3PromoPrice" style="color: var(--shopee-red);">Preço Promocional (Por:)</label>
                     <input type="text" id="step3PromoPrice" placeholder="R$ 0,00" style="border-color: var(--shopee-red); font-weight: bold;" oninput="formatCurrencyInput(this)">
                 </div>
+            </div>
+            <div class="form-group">
+                <label for="step3Coupon" style="color: #d39e00;">Cupom de Desconto (Opcional):</label>
+                <input type="text" id="step3Coupon" placeholder="Ex: FRETEGRATIS (Deixe em branco se não houver)" style="border-color: #ffe082;">
+                <small style="color: #888;">Se preenchido, aparecerá no topo junto com o desconto.</small>
             </div>
         </div>
 
@@ -162,7 +200,11 @@
                     <div class="canvas-column">
                         <div style="font-weight: bold; margin-bottom: 10px; text-align: center;">Feed</div>
                         <div id="feed-design" class="design-canvas">
-                            <div id="viewBadgeFeed" class="discount-badge">-0%</div>
+                            <div class="badge-wrapper">
+                                <div id="viewCouponFeed" class="coupon-badge">CUPOM</div>
+                                <div id="viewBadgeFeed" class="discount-badge">-0%</div>
+                            </div>
+
                             <div class="image-wrapper movable-item"><img id="viewImgFeed" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
                             <div id="viewDescFeed" class="text-desc movable-item">AGUARDANDO...</div>
                             <div class="price-container movable-item">
@@ -178,7 +220,7 @@
                          <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'img', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'img', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('feed', -0.1)">-</button><span id="disp-f-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('feed', 0.1)">+</button></div></div>
                         <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'desc', -1)">-</button><span id="disp-f-desc-size" class="size-display">12</span><button class="btn-size" onclick="adjustValue('feed', 'desc', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'desc', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'desc', 'left', 2)">➡️</button></div></div>
                         <div class="unified-group"><span class="control-label special-label">Preços (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'promo', -1)">-</button><span id="disp-f-promo-size" class="size-display">22</span><button class="btn-size" onclick="adjustValue('feed', 'promo', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'price', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'price', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'price', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'price', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label">Badge Desconto (Posição)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'badge', 'top', -5)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'top', 5)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'right', 5)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'right', -5)">➡️</button></div></div>
+                        <div class="unified-group"><span class="control-label">Badges / Cupom (Posição)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('feed', 'badge', 'top', -5)">⬆️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'top', 5)">⬇️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'right', 5)">⬅️</button><button class="btn-move" onclick="adjustPos('feed', 'badge', 'right', -5)">➡️</button></div></div>
                         <div class="unified-group"><span class="control-label">Texto Economia (Fonte)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('feed', 'econ', -1)">-</button><span id="disp-f-econ-size" class="size-display">12</span><button class="btn-size" onclick="adjustValue('feed', 'econ', 1)">+</button></div></div>
                     </div>
                 </div>
@@ -187,7 +229,11 @@
                     <div class="canvas-column">
                         <div style="font-weight: bold; margin-bottom: 10px; text-align: center;">Story</div>
                         <div id="story-design" class="design-canvas">
-                            <div id="viewBadgeStory" class="discount-badge">-0%</div>
+                            <div class="badge-wrapper">
+                                <div id="viewCouponStory" class="coupon-badge">CUPOM</div>
+                                <div id="viewBadgeStory" class="discount-badge">-0%</div>
+                            </div>
+                            
                             <div class="image-wrapper movable-item"><img id="viewImgStory" class="img-display" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
                             <div id="viewDescStory" class="text-desc movable-item">AGUARDANDO...</div>
                             <div class="price-container movable-item">
@@ -203,7 +249,7 @@
                         <div class="unified-group"><span class="control-label">Imagem (Posição/Zoom)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'img', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'img', 'left', 2)">➡️</button></div><div class="size-actions" style="margin-top:5px"><button class="btn-size" onclick="adjustScale('story', -0.1)">-</button><span id="disp-s-img-scale" class="size-display">100%</span><button class="btn-size" onclick="adjustScale('story', 0.1)">+</button></div></div>
                         <div class="unified-group"><span class="control-label">Descrição (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'desc', -1)">-</button><span id="disp-s-desc-size" class="size-display">14</span><button class="btn-size" onclick="adjustValue('story', 'desc', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'desc', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'desc', 'left', 2)">➡️</button></div></div>
                         <div class="unified-group"><span class="control-label special-label">Preços (Fonte/Pos)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'promo', -1)">-</button><span id="disp-s-promo-size" class="size-display">26</span><button class="btn-size" onclick="adjustValue('story', 'promo', 1)">+</button></div><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'price', 'top', -2)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'price', 'top', 2)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'price', 'left', -2)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'price', 'left', 2)">➡️</button></div></div>
-                        <div class="unified-group"><span class="control-label">Badge Desconto (Posição)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'badge', 'top', -5)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'top', 5)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'right', 5)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'right', -5)">➡️</button></div></div>
+                        <div class="unified-group"><span class="control-label">Badges / Cupom (Posição)</span><div class="move-actions"><button class="btn-move" onclick="adjustPos('story', 'badge', 'top', -5)">⬆️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'top', 5)">⬇️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'right', 5)">⬅️</button><button class="btn-move" onclick="adjustPos('story', 'badge', 'right', -5)">➡️</button></div></div>
                         <div class="unified-group"><span class="control-label">Texto Economia (Fonte)</span><div class="size-actions"><button class="btn-size" onclick="adjustValue('story', 'econ', -1)">-</button><span id="disp-s-econ-size" class="size-display">13</span><button class="btn-size" onclick="adjustValue('story', 'econ', 1)">+</button></div></div>
                     </div>
                 </div>
@@ -238,20 +284,38 @@
     function parseCurrency(str) { if (!str) return 0; const cleanStr = str.replace('R$', '').replace(/\./g, '').replace(',', '.').trim(); return parseFloat(cleanStr) || 0; }
     function formatMoney(num) { return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-    // --- ATUALIZAÇÃO DOS PREVIEWS (Mantida) ---
+    // --- ATUALIZAÇÃO DOS PREVIEWS (ATUALIZADA) ---
     function updateFinalPreviews() {
         const title = document.getElementById('step2Title').value || "TÍTULO DO PRODUTO";
         const oldInputVal = document.getElementById('step3OldPrice').value;
         const promoInputVal = document.getElementById('step3PromoPrice').value;
+        const couponVal = document.getElementById('step3Coupon').value.trim(); // Captura o cupom
+
         document.getElementById('viewDescFeed').innerText = title; document.getElementById('viewDescStory').innerText = title;
         const oldVal = parseCurrency(oldInputVal); const promoVal = parseCurrency(promoInputVal);
         let badgeText = ""; let economyHtml = ""; let showDiscount = false;
+        
         if (oldVal > promoVal && oldVal > 0) { showDiscount = true; const diff = oldVal - promoVal; const percent = Math.round((diff / oldVal) * 100); badgeText = `-${percent}%`; economyHtml = `Economize ${formatMoney(diff)} off`; }
+        
         const updateView = (type) => {
             const viewOld = document.getElementById('viewOld' + type); const viewPromo = document.getElementById('viewPromo' + type); const viewBadge = document.getElementById('viewBadge' + type); const viewEconomy = document.getElementById('viewEconomy' + type);
+            const viewCoupon = document.getElementById('viewCoupon' + type);
+
             viewOld.innerText = oldInputVal || ""; viewOld.style.display = (oldVal > 0 && showDiscount) ? 'block' : 'none';
             viewPromo.innerText = promoInputVal || "VALOR";
-            viewBadge.innerText = badgeText; viewBadge.style.display = showDiscount ? 'block' : 'none';
+            
+            // Atualiza Badge
+            viewBadge.innerText = badgeText; 
+            viewBadge.style.display = showDiscount ? 'block' : 'none';
+            
+            // Atualiza Cupom
+            if (couponVal) {
+                viewCoupon.innerText = "CUPOM: " + couponVal;
+                viewCoupon.style.display = 'block';
+            } else {
+                viewCoupon.style.display = 'none';
+            }
+
             viewEconomy.innerHTML = economyHtml; viewEconomy.style.display = showDiscount ? 'block' : 'none';
         };
         updateView('Feed'); updateView('Story');
