@@ -1,0 +1,73 @@
+name: Temporary storage cleanup
+
+on:
+  push:
+    branches:
+      - cleanup/storage-2026-11-14
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove old Actions artifacts and caches
+        uses: actions/github-script@v7
+        env:
+          KEEP_ARTIFACT_IDS: '[]'
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const keep = new Set(JSON.parse(process.env.KEEP_ARTIFACT_IDS).map(Number));
+            let artifactsDeleted = 0;
+            let artifactsKept = 0;
+            let cachesDeleted = 0;
+            let artifactBytes = 0;
+            let cacheBytes = 0;
+
+            for (let page = 1; ; page++) {
+              const response = await github.rest.actions.listArtifactsForRepo({
+                owner, repo, per_page: 100, page
+              });
+              const items = response.data.artifacts || [];
+              for (const item of items) {
+                if (keep.has(item.id)) {
+                  artifactsKept++;
+                  continue;
+                }
+                await github.rest.actions.deleteArtifact({
+                  owner, repo, artifact_id: item.id
+                });
+                artifactsDeleted++;
+                artifactBytes += item.size_in_bytes || 0;
+              }
+              if (items.length < 100) break;
+            }
+
+            for (let page = 1; ; page++) {
+              const response = await github.rest.actions.getActionsCacheList({
+                owner, repo, per_page: 100, page
+              });
+              const items = response.data.actions_caches || [];
+              for (const item of items) {
+                await github.rest.actions.deleteActionsCacheById({
+                  owner, repo, cache_id: item.id
+                });
+                cachesDeleted++;
+                cacheBytes += item.size_in_bytes || 0;
+              }
+              if (items.length < 100) break;
+            }
+
+            await core.summary
+              .addHeading('Storage cleanup completed')
+              .addTable([
+                [{data:'Item',header:true},{data:'Removed',header:true},{data:'Approx. size',header:true}],
+                ['Artifacts', String(artifactsDeleted), (artifactBytes / 1024 / 1024).toFixed(1) + ' MB'],
+                ['Caches', String(cachesDeleted), (cacheBytes / 1024 / 1024).toFixed(1) + ' MB'],
+                ['Preserved artifacts', String(artifactsKept), '']
+              ])
+              .write();
